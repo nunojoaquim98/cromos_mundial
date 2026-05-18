@@ -295,6 +295,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <div class="hstat m"><div class="hstat-n" id="g-miss">0</div><div class="hstat-l">Faltam</div></div>
     <div class="hstat r"><div class="hstat-n" id="g-rep">0</div><div class="hstat-l">Repetidos</div></div>
   </div>
+  <button class="back-btn" onclick="doLogout()" style="margin-left:8px">↩ Sair</button>
 </header>
 <div class="prog-bar-wrap" id="app-progbar" style="display:none"><div class="prog-bar-fill" id="g-prog" style="width:0%"></div></div>
 
@@ -664,6 +665,18 @@ function showApp() {
   loadLocalState();
   renderHome();
   syncFromSupabase();
+}
+
+function doLogout() {
+  localStorage.removeItem('mundial_auth');
+  document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('app-header').style.display = 'none';
+  document.getElementById('app-progbar').style.display = 'none';
+  document.getElementById('view-login').classList.add('active');
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pw').value = '';
+  document.getElementById('login-err').textContent = '';
 }
 
 function doLogin() {
