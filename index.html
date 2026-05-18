@@ -340,7 +340,7 @@ const COUNTRIES = [
 ];
 
 const SPECIALS = [
-  {id:'sp_fwc',icon:'🌟',name:'FWC - Especiais',code:'FWC'},
+  {id:'sp_fwc',icon:'🌟',name:'FWC - Especiais',code:'FWC',count:19},
 ];
 
 const STICKER_COUNT = 20;
@@ -397,12 +397,14 @@ function setSticker(itemId, idx, data) {
   });
 }
 function getItemStats(itemId) {
+  const item = ALL_ITEMS.find(x => x.id === itemId);
+  const total = (item && item.count) ? item.count : STICKER_COUNT;
   let have = 0, missing = 0, repeats = 0;
-  for (let i = 1; i <= STICKER_COUNT; i++) {
+  for (let i = 1; i <= total; i++) {
     const s = getSticker(itemId, i);
     if (s.have) { have++; repeats += (s.repeat || 0); } else missing++;
   }
-  return { have, missing, repeats, total: STICKER_COUNT };
+  return { have, missing, repeats, total };
 }
 function getGlobalStats() {
   let have = 0, missing = 0, repeats = 0, total = 0;
@@ -513,8 +515,9 @@ function renderDetail() {
       </div>
     </div>`;
 
+  const itemCount = currentItem.count || STICKER_COUNT;
   let html = '';
-  for (let i = 1; i <= STICKER_COUNT; i++) {
+  for (let i = 1; i <= itemCount; i++) {
     const s = getSticker(item.id, i);
     let cls = 'sticker';
     let statusTxt = 'Falta';
@@ -553,7 +556,8 @@ function changeRepeat(idx, delta) {
 }
 
 function markAll(have) {
-  for (let i = 1; i <= STICKER_COUNT; i++) {
+  const itemCount = currentItem.count || STICKER_COUNT;
+  for (let i = 1; i <= itemCount; i++) {
     const s = getSticker(currentItem.id, i);
     s.have = have;
     if (!have) s.repeat = 0;
