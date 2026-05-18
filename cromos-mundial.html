@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coleção Mundial de Futebol</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --surface: #111827;
+    --surface2: #1a2235;
+    --border: #1e2d45;
+    --gold: #f5c518;
+    --gold2: #e8a800;
+    --green: #22c55e;
+    --red: #ef4444;
+    --blue: #3b82f6;
+    --text: #e8edf5;
+    --muted: #6b7fa3;
+    --special: #a855f7;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #0f1a2e 0%, #0a0e1a 50%, #1a0a0f 100%);
+    border-bottom: 2px solid var(--gold);
+    padding: 20px 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .logo {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .logo-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    letter-spacing: 0.08em;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .logo-sub {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+
+  .stats-bar {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .stat {
+    text-align: center;
+  }
+
+  .stat-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: 0.65rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .stat.have .stat-num { color: var(--green); }
+  .stat.missing .stat-num { color: var(--red); }
+  .stat.repeat .stat-num { color: var(--gold); }
+  .stat.total .stat-num { color: var(--blue); }
+
+  /* PROGRESS BAR */
+  .progress-wrap {
+    padding: 12px 24px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--green), var(--gold));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 5px;
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.05em;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 16px 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .filter-btn {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 14px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+  .filter-btn.active { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+
+  .search-wrap {
+    margin-left: auto;
+    position: relative;
+  }
+
+  .search-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 6px 12px 6px 32px;
+    border-radius: 4px;
+    font-family: 'Barlow', sans-serif;
+    font-size: 0.85rem;
+    width: 180px;
+    transition: border 0.15s;
+  }
+
+  .search-input:focus { outline: none; border-color: var(--gold); }
+  .search-input::placeholder { color: var(--muted); }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 0.8rem;
+    pointer-events: none;
+  }
+
+  /* MAIN GRID */
+  main {
+    padding: 24px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .section-title span {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    text-align: center;
+    user-select: none;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+
+  .card:hover { transform: translateY(-2px); border-color: #2a3a55; }
+
+  .card.have { border-color: #1a4a2a; background: #0d2018; }
+  .card.have::before { background: var(--green); }
+
+  .card.repeat { border-color: #3d2e00; background: #1a1200; }
+  .card.repeat::before { background: var(--gold); }
+
+  .card.special { border-left: 2px solid var(--special); }
+  .card.special.have { border-left-color: var(--special); }
+
+  .card-flag {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .card-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .card-code {
+    font-size: 0.65rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+  }
+
+  /* STATUS CONTROLS */
+  .card-controls {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    width: 100%;
+    justify-content: center;
+    margin-top: 2px;
+  }
+
+  .btn-toggle {
+    width: 28px;
+    height: 28px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.1s;
+    flex-shrink: 0;
+  }
+
+  .btn-toggle:hover { border-color: var(--gold); color: var(--gold); }
+  .btn-toggle.active-have { background: var(--green); border-color: var(--green); color: #000; }
+  .btn-toggle.active-rep { background: var(--gold); border-color: var(--gold); color: #000; }
+
+  .repeat-count {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    color: var(--gold);
+    min-width: 20px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 0.6rem;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    padding: 2px 5px;
+    border-radius: 3px;
+  }
+
+  .badge-have { background: #1a4a2a; color: var(--green); }
+  .badge-repeat { background: #3d2e00; color: var(--gold); }
+
+  /* SPECIAL SECTION */
+  .special-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 32px;
+  }
+
+  .card.special-card {
+    border-color: #2a1a4a;
+    background: #120d1f;
+  }
+
+  .card.special-card::before { background: var(--special); }
+  .card.special-card.have { border-color: #1a3a4a; }
+
+  .card-icon {
+    font-size: 1.8rem;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    letter-spacing: 0.1em;
+    grid-column: 1 / -1;
+  }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* RESET BTN */
+  .btn-reset {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid #3a1a1a;
+    background: transparent;
+    color: #9a4a4a;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-reset:hover { border-color: var(--red); color: var(--red); }
+
+  @media (max-width: 600px) {
+    .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .logo-title { font-size: 1.4rem; }
+    .stats-bar { gap: 12px; }
+    main { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="logo-title">⚽ MUNDIAL 2026</div>
+    <div class="logo-sub">Gestor de Coleção de Cromos</div>
+  </div>
+  <div class="stats-bar">
+    <div class="stat have">
+      <div class="stat-num" id="stat-have">0</div>
+      <div class="stat-label">Tenho</div>
+    </div>
+    <div class="stat missing">
+      <div class="stat-num" id="stat-missing">0</div>
+      <div class="stat-label">Faltam</div>
+    </div>
+    <div class="stat repeat">
+      <div class="stat-num" id="stat-repeat">0</div>
+      <div class="stat-label">Repetidos</div>
+    </div>
+    <div class="stat total">
+      <div class="stat-num" id="stat-total">0</div>
+      <div class="stat-label">Total</div>
+    </div>
+  </div>
+</header>
+
+<div class="progress-wrap">
+  <div class="progress-bar">
+    <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="progress-label">0 / 0 cromos completos</div>
+</div>
+
+<div class="controls">
+  <button class="filter-btn active" onclick="setFilter('all', this)">Todos</button>
+  <button class="filter-btn" onclick="setFilter('have', this)">✓ Tenho</button>
+  <button class="filter-btn" onclick="setFilter('missing', this)">✗ Faltam</button>
+  <button class="filter-btn" onclick="setFilter('repeat', this)">⊕ Repetidos</button>
+  <button class="btn-reset" onclick="resetAll()">↺ Resetar tudo</button>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Pesquisar país..." id="search" oninput="applySearch()">
+  </div>
+</div>
+
+<main>
+  <div class="section-title">🌍 Grupos &amp; Países <span id="countries-count"></span></div>
+  <div class="grid" id="countries-grid"></div>
+
+  <div class="section-title">⭐ Cromos Especiais <span id="special-count"></span></div>
+  <div class="special-grid" id="special-grid"></div>
+</main>
+
+<script>
+const COUNTRIES = [
+  // Grupo A
+  { id: 'usa', flag: '🇺🇸', name: 'Estados Unidos', code: 'USA' },
+  { id: 'mex', flag: '🇲🇽', name: 'México', code: 'MEX' },
+  { id: 'can', flag: '🇨🇦', name: 'Canadá', code: 'CAN' },
+  { id: 'pan', flag: '🇵🇦', name: 'Panamá', code: 'PAN' },
+  // Grupo B
+  { id: 'arg', flag: '🇦🇷', name: 'Argentina', code: 'ARG' },
+  { id: 'bra', flag: '🇧🇷', name: 'Brasil', code: 'BRA' },
+  { id: 'uru', flag: '🇺🇾', name: 'Uruguai', code: 'URU' },
+  { id: 'ecu', flag: '🇪🇨', name: 'Equador', code: 'ECU' },
+  // Grupo C
+  { id: 'por', flag: '🇵🇹', name: 'Portugal', code: 'POR' },
+  { id: 'esp', flag: '🇪🇸', name: 'Espanha', code: 'ESP' },
+  { id: 'fra', flag: '🇫🇷', name: 'França', code: 'FRA' },
+  { id: 'bel', flag: '🇧🇪', name: 'Bélgica', code: 'BEL' },
+  // Grupo D
+  { id: 'ger', flag: '🇩🇪', name: 'Alemanha', code: 'GER' },
+  { id: 'ned', flag: '🇳🇱', name: 'Holanda', code: 'NED' },
+  { id: 'den', flag: '🇩🇰', name: 'Dinamarca', code: 'DEN' },
+  { id: 'aut', flag: '🇦🇹', name: 'Áustria', code: 'AUT' },
+  // Grupo E
+  { id: 'eng', flag: '🏴󠁧󠁢󠁥󠁮󠁧󠁿', name: 'Inglaterra', code: 'ENG' },
+  { id: 'cro', flag: '🇭🇷', name: 'Croácia', code: 'CRO' },
+  { id: 'ser', flag: '🇷🇸', name: 'Sérvia', code: 'SER' },
+  { id: 'ukr', flag: '🇺🇦', name: 'Ucrânia', code: 'UKR' },
+  // Grupo F
+  { id: 'mor', flag: '🇲🇦', name: 'Marrocos', code: 'MAR' },
+  { id: 'sen', flag: '🇸🇳', name: 'Senegal', code: 'SEN' },
+  { id: 'nga', flag: '🇳🇬', name: 'Nigéria', code: 'NGA' },
+  { id: 'egy', flag: '🇪🇬', name: 'Egito', code: 'EGY' },
+  // Grupo G
+  { id: 'jpn', flag: '🇯🇵', name: 'Japão', code: 'JPN' },
+  { id: 'kor', flag: '🇰🇷', name: 'Coreia do Sul', code: 'KOR' },
+  { id: 'aus', flag: '🇦🇺', name: 'Austrália', code: 'AUS' },
+  { id: 'irn', flag: '🇮🇷', name: 'Irão', code: 'IRN' },
+  // Grupo H
+  { id: 'col', flag: '🇨🇴', name: 'Colômbia', code: 'COL' },
+  { id: 'ven', flag: '🇻🇪', name: 'Venezuela', code: 'VEN' },
+  { id: 'par', flag: '🇵🇾', name: 'Paraguai', code: 'PAR' },
+  { id: 'bol', flag: '🇧🇴', name: 'Bolívia', code: 'BOL' },
+  // Grupo I
+  { id: 'sau', flag: '🇸🇦', name: 'Arábia Saudita', code: 'KSA' },
+  { id: 'irq', flag: '🇮🇶', name: 'Iraque', code: 'IRQ' },
+  { id: 'uzb', flag: '🇺🇿', name: 'Usbequistão', code: 'UZB' },
+  { id: 'oma', flag: '🇴🇲', name: 'Omã', code: 'OMA' },
+  // Grupo J
+  { id: 'gha', flag: '🇬🇭', name: 'Gana', code: 'GHA' },
+  { id: 'cmr', flag: '🇨🇲', name: 'Camarões', code: 'CMR' },
+  { id: 'civ', flag: '🇨🇮', name: 'Costa do Marfim', code: 'CIV' },
+  { id: 'tun', flag: '🇹🇳', name: 'Tunísia', code: 'TUN' },
+  // Grupo K
+  { id: 'mex2', flag: '🇲🇽', name: 'México B', code: 'MEX·B' },
+  { id: 'nzl', flag: '🇳🇿', name: 'Nova Zelândia', code: 'NZL' },
+  { id: 'slo', flag: '🇸🇮', name: 'Eslovénia', code: 'SVN' },
+  { id: 'alg', flag: '🇩🇿', name: 'Argélia', code: 'ALG' },
+  // Grupo L
+  { id: 'chi', flag: '🇨🇱', name: 'Chile', code: 'CHI' },
+  { id: 'per', flag: '🇵🇪', name: 'Peru', code: 'PER' },
+  { id: 'tri', flag: '🇹🇹', name: 'Trinidad e Tobago', code: 'TRI' },
+  { id: 'jam', flag: '🇯🇲', name: 'Jamaica', code: 'JAM' },
+];
+
+const SPECIALS = [
+  { id: 'sp_logo', icon: '🏆', name: 'Logo Oficial', code: 'LOGO' },
+  { id: 'sp_mascote', icon: '🐾', name: 'Mascote', code: 'MASC' },
+  { id: 'sp_bola', icon: '⚽', name: 'Bola Oficial', code: 'BOLA' },
+  { id: 'sp_estadio1', icon: '🏟️', name: 'Estádio NY/NJ', code: 'EST1' },
+  { id: 'sp_estadio2', icon: '🏟️', name: 'Estádio Dallas', code: 'EST2' },
+  { id: 'sp_estadio3', icon: '🏟️', name: 'Estádio LA', code: 'EST3' },
+  { id: 'sp_estadio4', icon: '🏟️', name: 'Estádio Miami', code: 'EST4' },
+  { id: 'sp_estadio5', icon: '🏟️', name: 'Estádio Seattle', code: 'EST5' },
+  { id: 'sp_estadio6', icon: '🏟️', name: 'Estádio S.Francisco', code: 'EST6' },
+  { id: 'sp_estadio7', icon: '🏟️', name: 'Estádio Boston', code: 'EST7' },
+  { id: 'sp_estadio8', icon: '🏟️', name: 'Estádio Guadalajara', code: 'EST8' },
+  { id: 'sp_estadio9', icon: '🏟️', name: 'Estádio Cidade do México', code: 'EST9' },
+  { id: 'sp_estadio10', icon: '🏟️', name: 'Estádio Toronto', code: 'EST10' },
+  { id: 'sp_estadio11', icon: '🏟️', name: 'Estádio Kansas City', code: 'EST11' },
+  { id: 'sp_estadio12', icon: '🏟️', name: 'Estádio Philadelphia', code: 'EST12' },
+  { id: 'sp_trofeu', icon: '🥇', name: 'Troféu FIFA', code: 'TROF' },
+  { id: 'sp_history', icon: '📜', name: 'História Mundial', code: 'HIST' },
+  { id: 'sp_2026', icon: '🌟', name: 'Cromo Especial 2026', code: '2026' },
+];
+
+// State management
+let state = JSON.parse(localStorage.getItem('mundial2026') || '{}');
+let currentFilter = 'all';
+let currentSearch = '';
+
+function getStatus(id) {
+  return state[id] || { have: false, repeat: 0 };
+}
+
+function saveState() {
+  localStorage.setItem('mundial2026', JSON.stringify(state));
+}
+
+function toggleHave(id, event) {
+  event.stopPropagation();
+  if (!state[id]) state[id] = { have: false, repeat: 0 };
+  state[id].have = !state[id].have;
+  if (!state[id].have) state[id].repeat = 0;
+  saveState();
+  renderAll();
+}
+
+function changeRepeat(id, delta, event) {
+  event.stopPropagation();
+  if (!state[id]) state[id] = { have: false, repeat: 0 };
+  if (delta > 0) {
+    state[id].have = true;
+    state[id].repeat = (state[id].repeat || 0) + 1;
+  } else {
+    state[id].repeat = Math.max(0, (state[id].repeat || 0) - 1);
+    if (state[id].repeat === 0 && !state[id].have) state[id].have = false;
+  }
+  saveState();
+  renderAll();
+}
+
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function applySearch() {
+  currentSearch = document.getElementById('search').value.toLowerCase();
+  renderAll();
+}
+
+function resetAll() {
+  if (confirm('Tens a certeza que queres apagar tudo?')) {
+    state = {};
+    saveState();
+    renderAll();
+  }
+}
+
+function cardVisible(item) {
+  const s = getStatus(item.id);
+  const nameMatch = (item.name + (item.code || '')).toLowerCase().includes(currentSearch);
+  if (!nameMatch) return false;
+  if (currentFilter === 'have') return s.have;
+  if (currentFilter === 'missing') return !s.have;
+  if (currentFilter === 'repeat') return s.repeat > 0;
+  return true;
+}
+
+function buildCard(item, isSpecial) {
+  const s = getStatus(item.id);
+  const hasCard = s.have;
+  const repeats = s.repeat || 0;
+
+  let cls = 'card';
+  if (isSpecial) cls += ' special-card';
+  if (hasCard) cls += repeats > 0 ? ' repeat' : ' have';
+
+  const badge = repeats > 0
+    ? `<span class="status-badge badge-repeat">×${repeats + 1}</span>`
+    : hasCard
+    ? `<span class="status-badge badge-have">✓</span>`
+    : '';
+
+  const icon = isSpecial
+    ? `<div class="card-icon">${item.icon}</div>`
+    : `<div class="card-flag">${item.flag}</div>`;
+
+  return `
+    <div class="${cls}" id="card-${item.id}" data-id="${item.id}" data-name="${item.name.toLowerCase()}${item.code ? ' ' + item.code.toLowerCase() : ''}">
+      ${badge}
+      ${icon}
+      <div class="card-name">${item.name}</div>
+      <div class="card-code">${item.code || ''}</div>
+      <div class="card-controls">
+        <button class="btn-toggle ${hasCard ? 'active-have' : ''}" title="Tenho / Não tenho"
+          onclick="toggleHave('${item.id}', event)">${hasCard ? '✓' : '○'}</button>
+        <button class="btn-toggle" title="Remover repetido"
+          onclick="changeRepeat('${item.id}', -1, event)">−</button>
+        <span class="repeat-count">${repeats > 0 ? repeats : ''}</span>
+        <button class="btn-toggle ${repeats > 0 ? 'active-rep' : ''}" title="Adicionar repetido"
+          onclick="changeRepeat('${item.id}', 1, event)">+</button>
+      </div>
+    </div>
+  `;
+}
+
+function updateStats() {
+  const all = [...COUNTRIES, ...SPECIALS];
+  let have = 0, missing = 0, repeat = 0;
+  all.forEach(item => {
+    const s = getStatus(item.id);
+    if (s.have) have++;
+    else missing++;
+    repeat += (s.repeat || 0);
+  });
+  document.getElementById('stat-have').textContent = have;
+  document.getElementById('stat-missing').textContent = missing;
+  document.getElementById('stat-repeat').textContent = repeat;
+  document.getElementById('stat-total').textContent = all.length;
+
+  const pct = Math.round((have / all.length) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${have} / ${all.length} cromos (${pct}%)`;
+}
+
+function renderAll() {
+  // Countries
+  const cGrid = document.getElementById('countries-grid');
+  const visibleC = COUNTRIES.filter(cardVisible);
+  document.getElementById('countries-count').textContent = `(${visibleC.length} de ${COUNTRIES.length})`;
+  cGrid.innerHTML = visibleC.length
+    ? visibleC.map(c => buildCard(c, false)).join('')
+    : '<div class="empty">Nenhum resultado</div>';
+
+  // Specials
+  const sGrid = document.getElementById('special-grid');
+  const visibleS = SPECIALS.filter(cardVisible);
+  document.getElementById('special-count').textContent = `(${visibleS.length} de ${SPECIALS.length})`;
+  sGrid.innerHTML = visibleS.length
+    ? visibleS.map(s => buildCard(s, true)).join('')
+    : '<div class="empty">Nenhum resultado</div>';
+
+  updateStats();
+}
+
+// Init
+renderAll();
+</script>
+</body>
+</html>
