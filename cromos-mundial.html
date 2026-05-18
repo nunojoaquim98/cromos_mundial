@@ -275,8 +275,8 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <div class="login-card">
       <div class="login-logo">⚽ MUNDIAL 2026</div>
       <div class="login-sub">Nuno e Patricinha</div>
-      <input class="login-input" id="login-user" type="text" placeholder="Utilizador" autocomplete="username">
-      <input class="login-input" id="login-pw" type="password" placeholder="Password" autocomplete="current-password"
+      <input class="login-input" id="login-user" type="text" placeholder="Utilizador" autocomplete="off">
+      <input class="login-input" id="login-pw" type="password" placeholder="Password" autocomplete="off"
         onkeydown="if(event.key==='Enter')doLogin()">
       <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
       <div class="login-err" id="login-err"></div>
@@ -668,7 +668,7 @@ function showApp() {
 
 function doLogin() {
   const user = document.getElementById('login-user').value.trim();
-  const pw = document.getElementById('login-pw').value;
+  const pw = document.getElementById('login-pw').value.trim();
   const err = document.getElementById('login-err');
 
   if (user === 'cromos' && pw === 'np2806') {
