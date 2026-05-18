@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Coleção Mundial 2026</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,400&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --bg: #080c16;
@@ -360,18 +361,40 @@ const SPECIALS = [
 const STICKER_COUNT = 20;
 const ALL_ITEMS = [...COUNTRIES, ...SPECIALS];
 
+// ─── SUPABASE ──────────────────────────────────────────────────
+const SUPABASE_URL = 'https://dxqxmqckwlsfjazccnvx.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_68nnKwJmrJj7ECgsmhQ58A_L4CYbDg_';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // ─── STATE ─────────────────────────────────────────────────────
 let state = {};
 let currentItem = null;
 let currentFilter = 'all';
 
-function loadState() {
+function loadLocalState() {
   try { state = JSON.parse(localStorage.getItem('mundial2026v2') || '{}'); } catch { state = {}; }
 }
+
 function saveState() {
   localStorage.setItem('mundial2026v2', JSON.stringify(state));
 }
-loadState();
+
+async function syncFromSupabase() {
+  const { data, error } = await sb.from('cromos').select('*');
+  if (error) { console.warn('Supabase sync error:', error); return; }
+  if (data && data.length > 0) {
+    state = {};
+    data.forEach(row => {
+      if (!state[row.item_id]) state[row.item_id] = {};
+      state[row.item_id][row.sticker_idx] = { have: row.have, repeat: row.repeat_count };
+    });
+    localStorage.setItem('mundial2026v2', JSON.stringify(state));
+    renderHome();
+    if (currentItem) renderDetail();
+  }
+}
+
+loadLocalState();
 
 // ─── HELPERS ───────────────────────────────────────────────────
 function getSticker(itemId, idx) {
@@ -381,6 +404,12 @@ function setSticker(itemId, idx, data) {
   if (!state[itemId]) state[itemId] = {};
   state[itemId][idx] = data;
   saveState();
+  sb.from('cromos').upsert({
+    item_id: itemId, sticker_idx: idx,
+    have: data.have, repeat_count: data.repeat || 0
+  }, { onConflict: 'item_id,sticker_idx' }).then(({ error }) => {
+    if (error) console.warn('Supabase save error:', error);
+  });
 }
 function getItemStats(itemId) {
   let have = 0, missing = 0, repeats = 0;
@@ -553,10 +582,14 @@ function clearCountry() {
   state[currentItem.id] = {};
   saveState();
   renderDetail();
+  sb.from('cromos').delete().eq('item_id', currentItem.id).then(({ error }) => {
+    if (error) console.warn('Supabase delete error:', error);
+  });
 }
 
 // ─── INIT ──────────────────────────────────────────────────────
 renderHome();
+syncFromSupabase();
 </script>
 </body>
 </html>
