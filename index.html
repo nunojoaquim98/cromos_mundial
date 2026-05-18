@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coleção Mundial 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,400&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c16;
+  --surface: #0f1520;
+  --surface2: #161e2e;
+  --surface3: #1d2840;
+  --border: #1e2d47;
+  --border2: #253550;
+  --gold: #f5c518;
+  --gold-dim: #7a6108;
+  --green: #22c55e;
+  --green-dim: #0d3320;
+  --red: #ef4444;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --text: #dce6f5;
+  --text2: #8fa5c8;
+  --muted: #4a5f80;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow-x: hidden; }
+
+/* ─── VIEWS ─── */
+.view { display: none; }
+.view.active { display: block; }
+
+/* ─── HEADER ─── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(8,12,22,0.97);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 56px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.back-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 6px;
+  padding: 6px 12px; color: var(--text2); cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem;
+  letter-spacing: 0.1em; text-transform: uppercase; transition: all 0.15s;
+}
+.back-btn:hover { border-color: var(--gold); color: var(--gold); }
+.logo {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem;
+  letter-spacing: 0.1em; color: var(--gold); cursor: pointer; line-height: 1;
+}
+.logo:hover { opacity: 0.8; }
+.header-stats { display: flex; gap: 18px; }
+.hstat { text-align: center; }
+.hstat-n { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; line-height: 1; }
+.hstat-l { font-size: 0.58rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.hstat.h .hstat-n { color: var(--green); }
+.hstat.m .hstat-n { color: var(--red); }
+.hstat.r .hstat-n { color: var(--gold); }
+
+/* ─── PROGRESS ─── */
+.prog-bar-wrap { height: 4px; background: var(--surface2); }
+.prog-bar-fill { height: 100%; background: linear-gradient(90deg, var(--green) 0%, var(--gold) 100%); transition: width .4s ease; }
+
+/* ─── MAIN CONTROLS ─── */
+.controls {
+  padding: 12px 24px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+  border-bottom: 1px solid var(--border);
+}
+.filter-btn {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s;
+}
+.filter-btn:hover { border-color: var(--gold); color: var(--gold); }
+.filter-btn.active { background: var(--gold); color: #000; border-color: var(--gold); font-weight: 700; }
+.search-wrap { margin-left: auto; position: relative; }
+.search-input {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); padding: 6px 12px 6px 30px; border-radius: 5px;
+  font-family: 'Barlow', sans-serif; font-size: 0.85rem; width: 190px; transition: border .15s;
+}
+.search-input:focus { outline: none; border-color: var(--gold); }
+.search-input::placeholder { color: var(--muted); }
+.search-icon { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 0.8rem; pointer-events: none; }
+
+/* ─── SECTION ─── */
+main { padding: 24px; max-width: 1440px; margin: 0 auto; }
+.sec-head {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.2em;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
+}
+.sec-head small { font-size: 0.75rem; }
+
+/* ─── COUNTRY CARDS GRID ─── */
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-bottom: 32px; }
+
+.ccard {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 16px 12px 12px; cursor: pointer; transition: all 0.18s;
+  position: relative; overflow: hidden; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.ccard::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+  background: var(--border); transition: background 0.2s;
+}
+.ccard:hover { transform: translateY(-3px); border-color: var(--border2); box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
+.ccard:hover::after { background: var(--gold); }
+.ccard.complete { border-color: #1a3d28; background: #0a1810; }
+.ccard.complete::after { background: var(--green); }
+.ccard.partial::after { background: var(--gold); }
+.ccard-flag { font-size: 2.2rem; line-height: 1; }
+.ccard-icon { font-size: 1.8rem; }
+.ccard-name { font-family: 'Barlow Condensed', sans-serif; font-size: 0.78rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; line-height: 1.2; }
+.ccard-code { font-size: 0.62rem; color: var(--muted); letter-spacing: 0.1em; }
+.ccard-prog { width: 100%; margin-top: 4px; }
+.ccard-prog-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.ccard-prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); border-radius: 2px; transition: width 0.3s; }
+.ccard-prog-txt { font-size: 0.64rem; color: var(--muted); margin-top: 3px; font-family: 'Barlow Condensed', sans-serif; }
+.ccard-repeats {
+  position: absolute; top: 7px; right: 7px;
+  background: var(--gold); color: #000;
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.68rem;
+  padding: 1px 5px; border-radius: 3px; line-height: 1.5;
+}
+
+/* ─── DETAIL VIEW ─── */
+.detail-hero {
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 28px 24px 24px;
+  display: flex; align-items: flex-start; gap: 20px; flex-wrap: wrap;
+}
+.detail-flag { font-size: 4rem; line-height: 1; padding-top: 4px; }
+.detail-info { flex: 1; min-width: 220px; }
+.detail-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; letter-spacing: 0.06em; line-height: 1; }
+.detail-code { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-top: 2px; }
+.detail-meta { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.dmeta {
+  text-align: center; background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 18px;
+}
+.dmeta-n { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; }
+.dmeta-l { font-size: 0.62rem; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); }
+.dmeta.dh .dmeta-n { color: var(--green); }
+.dmeta.dm .dmeta-n { color: var(--red); }
+.dmeta.dr .dmeta-n { color: var(--gold); }
+.detail-prog { margin-top: 16px; }
+.detail-prog-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.detail-prog-fill { height: 100%; background: linear-gradient(90deg, var(--green), var(--gold)); transition: width .3s; }
+.detail-prog-txt { font-size: 0.72rem; color: var(--muted); margin-top: 5px; font-family: 'Barlow Condensed', sans-serif; }
+
+/* ─── DETAIL ACTIONS ─── */
+.detail-actions {
+  padding: 10px 24px; border-bottom: 1px solid var(--border);
+  display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+}
+.act-btn {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 5px 12px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--text2); cursor: pointer; transition: all 0.15s;
+}
+.act-btn:hover { border-color: var(--green); color: var(--green); }
+.act-btn.danger:hover { border-color: var(--red); color: var(--red); }
+
+/* ─── STICKER GRID ─── */
+.sticker-grid {
+  padding: 24px; max-width: 900px; margin: 0 auto;
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(112px, 1fr)); gap: 10px;
+}
+
+.sticker {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+  padding: 14px 8px 10px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  transition: border-color 0.15s, background 0.15s; position: relative; overflow: hidden;
+}
+.sticker::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--border); transition: background .2s;
+}
+.sticker.s-have { background: var(--green-dim); border-color: #1a4a2a; }
+.sticker.s-have::before { background: var(--green); }
+.sticker.s-repeat { background: #1a1200; border-color: #3d2e00; }
+.sticker.s-repeat::before { background: var(--gold); }
+
+.sticker-num {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1;
+  color: var(--muted); transition: color .2s;
+}
+.sticker.s-have .sticker-num { color: var(--green); }
+.sticker.s-repeat .sticker-num { color: var(--gold); }
+
+.sticker-status {
+  font-family: 'Barlow Condensed', sans-serif; font-size: 0.64rem;
+  letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); min-height: 14px;
+}
+.sticker.s-have .sticker-status { color: var(--green); }
+.sticker.s-repeat .sticker-status { color: var(--gold); }
+
+.sticker-row { display: flex; align-items: center; gap: 3px; }
+.sbtn {
+  width: 26px; height: 26px; border-radius: 4px; border: 1px solid var(--border);
+  background: transparent; color: var(--muted); cursor: pointer; font-size: 0.85rem;
+  display: flex; align-items: center; justify-content: center; transition: all 0.1s; flex-shrink: 0;
+}
+.sbtn:hover { border-color: var(--gold); color: var(--gold); }
+.sbtn.s-on { background: var(--green); border-color: var(--green); color: #000; font-weight: 700; }
+.sbtn.r-on { background: var(--gold); border-color: var(--gold); color: #000; }
+.srep-count {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--gold);
+  min-width: 18px; text-align: center; line-height: 1;
+}
+
+.empty { text-align: center; padding: 48px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.1em; grid-column: 1/-1; }
+
+@media (max-width: 600px) {
+  header { padding: 0 14px; }
+  .header-stats { gap: 12px; }
+  .hstat-n { font-size: 1.1rem; }
+  main, .sticker-grid { padding: 14px; }
+  .detail-hero { padding: 18px 14px; }
+  .detail-flag { font-size: 3rem; }
+  .detail-name { font-size: 2rem; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+  .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 7px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header id="app-header">
+  <div class="header-left">
+    <button class="back-btn" id="back-btn" style="display:none" onclick="goHome()">← Voltar</button>
+    <div class="logo" onclick="goHome()">⚽ MUNDIAL 2026</div>
+  </div>
+  <div class="header-stats">
+    <div class="hstat h"><div class="hstat-n" id="g-have">0</div><div class="hstat-l">Tenho</div></div>
+    <div class="hstat m"><div class="hstat-n" id="g-miss">0</div><div class="hstat-l">Faltam</div></div>
+    <div class="hstat r"><div class="hstat-n" id="g-rep">0</div><div class="hstat-l">Repetidos</div></div>
+  </div>
+</header>
+<div class="prog-bar-wrap"><div class="prog-bar-fill" id="g-prog" style="width:0%"></div></div>
+
+<!-- ═══ VIEW: HOME ═══ -->
+<div class="view active" id="view-home">
+  <div class="controls">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+    <button class="filter-btn" onclick="setFilter('complete',this)">✓ Completos</button>
+    <button class="filter-btn" onclick="setFilter('partial',this)">◑ Incompletos</button>
+    <button class="filter-btn" onclick="setFilter('empty',this)">○ Sem cromos</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" type="text" placeholder="Pesquisar..." id="search" oninput="renderHome()">
+    </div>
+  </div>
+  <main>
+    <div class="sec-head">🌍 Países <small id="c-count"></small></div>
+    <div class="grid" id="countries-grid"></div>
+    <div class="sec-head">⭐ Cromos Especiais <small id="s-count"></small></div>
+    <div class="grid" id="special-grid"></div>
+  </main>
+</div>
+
+<!-- ═══ VIEW: DETAIL ═══ -->
+<div class="view" id="view-detail">
+  <div class="detail-hero" id="detail-hero"></div>
+  <div class="detail-actions">
+    <button class="act-btn" onclick="markAll(true)">✓ Marcar todos</button>
+    <button class="act-btn" onclick="markAll(false)">○ Desmarcar todos</button>
+    <button class="act-btn danger" onclick="clearCountry()">↺ Limpar</button>
+  </div>
+  <div class="sticker-grid" id="sticker-grid"></div>
+</div>
+
+<script>
+// ─── DATA ──────────────────────────────────────────────────────
+const COUNTRIES = [
+  {id:'usa',flag:'🇺🇸',name:'Estados Unidos',code:'USA'},
+  {id:'mex',flag:'🇲🇽',name:'México',code:'MEX'},
+  {id:'can',flag:'🇨🇦',name:'Canadá',code:'CAN'},
+  {id:'pan',flag:'🇵🇦',name:'Panamá',code:'PAN'},
+  {id:'arg',flag:'🇦🇷',name:'Argentina',code:'ARG'},
+  {id:'bra',flag:'🇧🇷',name:'Brasil',code:'BRA'},
+  {id:'uru',flag:'🇺🇾',name:'Uruguai',code:'URU'},
+  {id:'ecu',flag:'🇪🇨',name:'Equador',code:'ECU'},
+  {id:'por',flag:'🇵🇹',name:'Portugal',code:'POR'},
+  {id:'esp',flag:'🇪🇸',name:'Espanha',code:'ESP'},
+  {id:'fra',flag:'🇫🇷',name:'França',code:'FRA'},
+  {id:'bel',flag:'🇧🇪',name:'Bélgica',code:'BEL'},
+  {id:'ger',flag:'🇩🇪',name:'Alemanha',code:'GER'},
+  {id:'ned',flag:'🇳🇱',name:'Holanda',code:'NED'},
+  {id:'den',flag:'🇩🇰',name:'Dinamarca',code:'DEN'},
+  {id:'aut',flag:'🇦🇹',name:'Áustria',code:'AUT'},
+  {id:'eng',flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',name:'Inglaterra',code:'ENG'},
+  {id:'cro',flag:'🇭🇷',name:'Croácia',code:'CRO'},
+  {id:'ser',flag:'🇷🇸',name:'Sérvia',code:'SER'},
+  {id:'ukr',flag:'🇺🇦',name:'Ucrânia',code:'UKR'},
+  {id:'mor',flag:'🇲🇦',name:'Marrocos',code:'MAR'},
+  {id:'sen',flag:'🇸🇳',name:'Senegal',code:'SEN'},
+  {id:'nga',flag:'🇳🇬',name:'Nigéria',code:'NGA'},
+  {id:'egy',flag:'🇪🇬',name:'Egito',code:'EGY'},
+  {id:'jpn',flag:'🇯🇵',name:'Japão',code:'JPN'},
+  {id:'kor',flag:'🇰🇷',name:'Coreia do Sul',code:'KOR'},
+  {id:'aus',flag:'🇦🇺',name:'Austrália',code:'AUS'},
+  {id:'irn',flag:'🇮🇷',name:'Irão',code:'IRN'},
+  {id:'col',flag:'🇨🇴',name:'Colômbia',code:'COL'},
+  {id:'ven',flag:'🇻🇪',name:'Venezuela',code:'VEN'},
+  {id:'par',flag:'🇵🇾',name:'Paraguai',code:'PAR'},
+  {id:'bol',flag:'🇧🇴',name:'Bolívia',code:'BOL'},
+  {id:'sau',flag:'🇸🇦',name:'Arábia Saudita',code:'KSA'},
+  {id:'irq',flag:'🇮🇶',name:'Iraque',code:'IRQ'},
+  {id:'uzb',flag:'🇺🇿',name:'Usbequistão',code:'UZB'},
+  {id:'oma',flag:'🇴🇲',name:'Omã',code:'OMA'},
+  {id:'gha',flag:'🇬🇭',name:'Gana',code:'GHA'},
+  {id:'cmr',flag:'🇨🇲',name:'Camarões',code:'CMR'},
+  {id:'civ',flag:'🇨🇮',name:'Costa do Marfim',code:'CIV'},
+  {id:'tun',flag:'🇹🇳',name:'Tunísia',code:'TUN'},
+  {id:'nzl',flag:'🇳🇿',name:'Nova Zelândia',code:'NZL'},
+  {id:'slo',flag:'🇸🇮',name:'Eslovénia',code:'SVN'},
+  {id:'alg',flag:'🇩🇿',name:'Argélia',code:'ALG'},
+  {id:'chi',flag:'🇨🇱',name:'Chile',code:'CHI'},
+  {id:'per',flag:'🇵🇪',name:'Peru',code:'PER'},
+  {id:'tri',flag:'🇹🇹',name:'Trinidad e Tobago',code:'TRI'},
+  {id:'jam',flag:'🇯🇲',name:'Jamaica',code:'JAM'},
+  {id:'qat',flag:'🇶🇦',name:'Qatar',code:'QAT'},
+];
+
+const SPECIALS = [
+  {id:'sp_logo',icon:'🏆',name:'Logo Oficial',code:'LOGO'},
+  {id:'sp_mascote',icon:'🐾',name:'Mascote',code:'MASC'},
+  {id:'sp_bola',icon:'⚽',name:'Bola Oficial',code:'BOLA'},
+  {id:'sp_est1',icon:'🏟️',name:'Estádio NY/NJ',code:'EST1'},
+  {id:'sp_est2',icon:'🏟️',name:'Estádio Dallas',code:'EST2'},
+  {id:'sp_est3',icon:'🏟️',name:'Estádio LA',code:'EST3'},
+  {id:'sp_est4',icon:'🏟️',name:'Estádio Miami',code:'EST4'},
+  {id:'sp_est5',icon:'🏟️',name:'Estádio Seattle',code:'EST5'},
+  {id:'sp_est6',icon:'🏟️',name:'Estádio S.Francisco',code:'EST6'},
+  {id:'sp_est7',icon:'🏟️',name:'Estádio Boston',code:'EST7'},
+  {id:'sp_est8',icon:'🏟️',name:'Estádio Guadalajara',code:'EST8'},
+  {id:'sp_est9',icon:'🏟️',name:'Estádio Cidade México',code:'EST9'},
+  {id:'sp_est10',icon:'🏟️',name:'Estádio Toronto',code:'EST10'},
+  {id:'sp_trofeu',icon:'🥇',name:'Troféu FIFA',code:'TROF'},
+  {id:'sp_hist',icon:'📜',name:'História Mundial',code:'HIST'},
+  {id:'sp_2026',icon:'🌟',name:'Especial 2026',code:'2026'},
+];
+
+const STICKER_COUNT = 20;
+const ALL_ITEMS = [...COUNTRIES, ...SPECIALS];
+
+// ─── STATE ─────────────────────────────────────────────────────
+let state = {};
+let currentItem = null;
+let currentFilter = 'all';
+
+function loadState() {
+  try { state = JSON.parse(localStorage.getItem('mundial2026v2') || '{}'); } catch { state = {}; }
+}
+function saveState() {
+  localStorage.setItem('mundial2026v2', JSON.stringify(state));
+}
+loadState();
+
+// ─── HELPERS ───────────────────────────────────────────────────
+function getSticker(itemId, idx) {
+  return (state[itemId] && state[itemId][idx]) ? state[itemId][idx] : { have: false, repeat: 0 };
+}
+function setSticker(itemId, idx, data) {
+  if (!state[itemId]) state[itemId] = {};
+  state[itemId][idx] = data;
+  saveState();
+}
+function getItemStats(itemId) {
+  let have = 0, missing = 0, repeats = 0;
+  for (let i = 1; i <= STICKER_COUNT; i++) {
+    const s = getSticker(itemId, i);
+    if (s.have) { have++; repeats += (s.repeat || 0); } else missing++;
+  }
+  return { have, missing, repeats, total: STICKER_COUNT };
+}
+function getGlobalStats() {
+  let have = 0, missing = 0, repeats = 0, total = 0;
+  ALL_ITEMS.forEach(item => {
+    const st = getItemStats(item.id);
+    have += st.have; missing += st.missing; repeats += st.repeats; total += st.total;
+  });
+  return { have, missing, repeats, total };
+}
+
+// ─── GLOBAL BAR ────────────────────────────────────────────────
+function updateGlobalStats() {
+  const { have, missing, repeats, total } = getGlobalStats();
+  document.getElementById('g-have').textContent = have;
+  document.getElementById('g-miss').textContent = missing;
+  document.getElementById('g-rep').textContent = repeats;
+  const pct = total ? Math.round((have / total) * 100) : 0;
+  document.getElementById('g-prog').style.width = pct + '%';
+}
+
+// ─── HOME ──────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderHome();
+}
+
+function cardHTML(item, isSpecial) {
+  const { have, missing, repeats, total } = getItemStats(item.id);
+  const pct = Math.round((have / total) * 100);
+  const isComplete = have === total;
+  const isPartial = have > 0 && !isComplete;
+
+  const q = document.getElementById('search').value.toLowerCase();
+  if (!(item.name + ' ' + (item.code || '')).toLowerCase().includes(q)) return '';
+
+  if (currentFilter === 'complete' && !isComplete) return '';
+  if (currentFilter === 'partial' && (have === 0 || isComplete)) return '';
+  if (currentFilter === 'empty' && have > 0) return '';
+
+  let cls = 'ccard' + (isComplete ? ' complete' : isPartial ? ' partial' : '');
+  const icon = isSpecial ? `<div class="ccard-icon">${item.icon}</div>` : `<div class="ccard-flag">${item.flag}</div>`;
+  const repBadge = repeats > 0 ? `<div class="ccard-repeats">+${repeats} rep</div>` : '';
+
+  return `<div class="${cls}" onclick="openItem('${item.id}')">
+    ${repBadge}${icon}
+    <div class="ccard-name">${item.name}</div>
+    <div class="ccard-code">${item.code || ''}</div>
+    <div class="ccard-prog">
+      <div class="ccard-prog-bar"><div class="ccard-prog-fill" style="width:${pct}%"></div></div>
+      <div class="ccard-prog-txt">${have}/${total}${repeats > 0 ? ' · +'+repeats+' rep.' : ''}</div>
+    </div>
+  </div>`;
+}
+
+function renderHome() {
+  const cCards = COUNTRIES.map(c => cardHTML(c, false)).join('');
+  const sCards = SPECIALS.map(s => cardHTML(s, true)).join('');
+  document.getElementById('countries-grid').innerHTML = cCards || '<div class="empty">Nenhum resultado</div>';
+  document.getElementById('special-grid').innerHTML = sCards || '<div class="empty">Nenhum resultado</div>';
+
+  const q = document.getElementById('search').value.toLowerCase();
+  const cf = item => (item.name+' '+(item.code||'')).toLowerCase().includes(q);
+  document.getElementById('c-count').textContent = `(${COUNTRIES.filter(cf).length} de ${COUNTRIES.length})`;
+  document.getElementById('s-count').textContent = `(${SPECIALS.filter(cf).length} de ${SPECIALS.length})`;
+  updateGlobalStats();
+}
+
+// ─── DETAIL ────────────────────────────────────────────────────
+function openItem(id) {
+  currentItem = ALL_ITEMS.find(x => x.id === id);
+  document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-detail').classList.add('active');
+  document.getElementById('back-btn').style.display = 'flex';
+  renderDetail();
+  window.scrollTo(0, 0);
+}
+
+function goHome() {
+  currentItem = null;
+  document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('view-home').classList.add('active');
+  document.getElementById('back-btn').style.display = 'none';
+  renderHome();
+  window.scrollTo(0, 0);
+}
+
+function renderDetail() {
+  const item = currentItem;
+  const { have, missing, repeats, total } = getItemStats(item.id);
+  const pct = Math.round((have / total) * 100);
+  const icon = item.flag ? item.flag : item.icon;
+
+  document.getElementById('detail-hero').innerHTML = `
+    <div class="detail-flag">${icon}</div>
+    <div class="detail-info">
+      <div class="detail-name">${item.name}</div>
+      <div class="detail-code">${item.code || ''}</div>
+      <div class="detail-meta">
+        <div class="dmeta dh"><div class="dmeta-n">${have}</div><div class="dmeta-l">Tenho</div></div>
+        <div class="dmeta dm"><div class="dmeta-n">${missing}</div><div class="dmeta-l">Faltam</div></div>
+        <div class="dmeta dr"><div class="dmeta-n">${repeats}</div><div class="dmeta-l">Repetidos</div></div>
+      </div>
+      <div class="detail-prog">
+        <div class="detail-prog-bar"><div class="detail-prog-fill" style="width:${pct}%"></div></div>
+        <div class="detail-prog-txt">${have} / ${total} cromos completados (${pct}%)</div>
+      </div>
+    </div>`;
+
+  let html = '';
+  for (let i = 1; i <= STICKER_COUNT; i++) {
+    const s = getSticker(item.id, i);
+    let cls = 'sticker';
+    let statusTxt = 'Falta';
+    if (s.have && s.repeat > 0) { cls += ' s-repeat'; statusTxt = `×${s.repeat + 1}`; }
+    else if (s.have) { cls += ' s-have'; statusTxt = 'Tenho'; }
+
+    html += `<div class="${cls}">
+      <div class="sticker-num">${i}</div>
+      <div class="sticker-status">${statusTxt}</div>
+      <div class="sticker-row">
+        <button class="sbtn ${s.have ? 's-on' : ''}" onclick="toggleSticker(${i})">${s.have ? '✓' : '○'}</button>
+        <button class="sbtn ${s.repeat > 0 ? 'r-on' : ''}" onclick="changeRepeat(${i},-1)">−</button>
+        <span class="srep-count">${s.repeat > 0 ? s.repeat : ''}</span>
+        <button class="sbtn" onclick="changeRepeat(${i},1)">+</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('sticker-grid').innerHTML = html;
+  updateGlobalStats();
+}
+
+function toggleSticker(idx) {
+  const s = getSticker(currentItem.id, idx);
+  s.have = !s.have;
+  if (!s.have) s.repeat = 0;
+  setSticker(currentItem.id, idx, s);
+  renderDetail();
+}
+
+function changeRepeat(idx, delta) {
+  const s = getSticker(currentItem.id, idx);
+  if (delta > 0) { s.have = true; s.repeat = (s.repeat || 0) + 1; }
+  else { s.repeat = Math.max(0, (s.repeat || 0) - 1); }
+  setSticker(currentItem.id, idx, s);
+  renderDetail();
+}
+
+function markAll(have) {
+  for (let i = 1; i <= STICKER_COUNT; i++) {
+    const s = getSticker(currentItem.id, i);
+    s.have = have;
+    if (!have) s.repeat = 0;
+    setSticker(currentItem.id, i, s);
+  }
+  renderDetail();
+}
+
+function clearCountry() {
+  if (!confirm(`Limpar todos os cromos de ${currentItem.name}?`)) return;
+  state[currentItem.id] = {};
+  saveState();
+  renderDetail();
+}
+
+// ─── INIT ──────────────────────────────────────────────────────
+renderHome();
+</script>
+</body>
+</html>
