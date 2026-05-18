@@ -656,8 +656,6 @@ function clearCountry() {
 }
 
 // ─── AUTH ──────────────────────────────────────────────────────
-const LOGIN_EMAIL = 'cromos@mundial.pt';
-
 function showApp() {
   document.getElementById('view-login').classList.remove('active');
   document.getElementById('view-home').classList.add('active');
@@ -668,35 +666,23 @@ function showApp() {
   syncFromSupabase();
 }
 
-async function doLogin() {
+function doLogin() {
   const user = document.getElementById('login-user').value.trim();
   const pw = document.getElementById('login-pw').value;
-  const btn = document.getElementById('login-btn');
   const err = document.getElementById('login-err');
 
-  if (user !== 'cromos') { err.textContent = 'Utilizador inválido.'; return; }
-
-  btn.disabled = true;
-  btn.textContent = 'A entrar...';
-  err.textContent = '';
-
-  const { error } = await sb.auth.signInWithPassword({ email: LOGIN_EMAIL, password: pw });
-  if (error) {
-    err.textContent = 'Password incorreta.';
-    btn.disabled = false;
-    btn.textContent = 'Entrar';
-  } else {
+  if (user === 'cromos' && pw === 'np2806') {
+    localStorage.setItem('mundial_auth', '1');
     showApp();
+  } else {
+    err.textContent = 'Utilizador ou password incorretos.';
   }
 }
 
 // ─── INIT ──────────────────────────────────────────────────────
-(async () => {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    showApp();
-  }
-})();
+if (localStorage.getItem('mundial_auth') === '1') {
+  showApp();
+}
 </script>
 </body>
 </html>
