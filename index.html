@@ -226,6 +226,34 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 
 .empty { text-align: center; padding: 48px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.1em; grid-column: 1/-1; }
 
+/* ─── LOGIN ─── */
+.login-wrap {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 0%, #0d1f3c 0%, var(--bg) 70%);
+}
+.login-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 40px 36px; width: 100%; max-width: 360px;
+  display: flex; flex-direction: column; gap: 14px; text-align: center;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+}
+.login-logo { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 0.12em; color: var(--gold); }
+.login-sub { font-family: 'Barlow Condensed', sans-serif; font-size: 0.8rem; letter-spacing: 0.2em; color: var(--muted); text-transform: uppercase; margin-top: -8px; margin-bottom: 6px; }
+.login-input {
+  background: var(--surface2); border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text); padding: 11px 14px; font-family: 'Barlow', sans-serif; font-size: 0.95rem;
+  outline: none; transition: border .15s; width: 100%;
+}
+.login-input:focus { border-color: var(--gold); }
+.login-btn {
+  background: var(--gold); color: #000; border: none; border-radius: 8px;
+  padding: 12px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+  letter-spacing: 0.12em; cursor: pointer; transition: opacity .15s; margin-top: 4px;
+}
+.login-btn:hover { opacity: 0.85; }
+.login-btn:disabled { opacity: 0.5; cursor: default; }
+.login-err { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; color: var(--red); min-height: 18px; }
+
 @media (max-width: 600px) {
   header { padding: 0 14px; }
   .header-stats { gap: 12px; }
@@ -241,8 +269,23 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 </head>
 <body>
 
+<!-- ═══ VIEW: LOGIN ═══ -->
+<div class="view active" id="view-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo">⚽ MUNDIAL 2026</div>
+      <div class="login-sub">Nuno e Patricinha</div>
+      <input class="login-input" id="login-user" type="text" placeholder="Utilizador" autocomplete="username">
+      <input class="login-input" id="login-pw" type="password" placeholder="Password" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter')doLogin()">
+      <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
+      <div class="login-err" id="login-err"></div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ HEADER ═══ -->
-<header id="app-header">
+<header id="app-header" style="display:none">
   <div class="header-left">
     <button class="back-btn" id="back-btn" style="display:none" onclick="goHome()">← Voltar</button>
     <div class="logo" onclick="goHome()">⚽ MUNDIAL 2026 Nuno e Patricinha </div>
@@ -253,10 +296,10 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <div class="hstat r"><div class="hstat-n" id="g-rep">0</div><div class="hstat-l">Repetidos</div></div>
   </div>
 </header>
-<div class="prog-bar-wrap"><div class="prog-bar-fill" id="g-prog" style="width:0%"></div></div>
+<div class="prog-bar-wrap" id="app-progbar" style="display:none"><div class="prog-bar-fill" id="g-prog" style="width:0%"></div></div>
 
 <!-- ═══ VIEW: HOME ═══ -->
-<div class="view active" id="view-home">
+<div class="view" id="view-home">
   <div class="controls">
     <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
     <button class="filter-btn" onclick="setFilter('complete',this)">✓ Completos</button>
@@ -413,8 +456,6 @@ async function syncFromSupabase() {
     await pushLocalToSupabase();
   }
 }
-
-loadLocalState();
 
 // ─── HELPERS ───────────────────────────────────────────────────
 function getSticker(itemId, idx) {
@@ -614,9 +655,48 @@ function clearCountry() {
   });
 }
 
+// ─── AUTH ──────────────────────────────────────────────────────
+const LOGIN_EMAIL = 'cromos@mundial.pt';
+
+function showApp() {
+  document.getElementById('view-login').classList.remove('active');
+  document.getElementById('view-home').classList.add('active');
+  document.getElementById('app-header').style.display = 'flex';
+  document.getElementById('app-progbar').style.display = 'block';
+  loadLocalState();
+  renderHome();
+  syncFromSupabase();
+}
+
+async function doLogin() {
+  const user = document.getElementById('login-user').value.trim();
+  const pw = document.getElementById('login-pw').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-err');
+
+  if (user !== 'cromos') { err.textContent = 'Utilizador inválido.'; return; }
+
+  btn.disabled = true;
+  btn.textContent = 'A entrar...';
+  err.textContent = '';
+
+  const { error } = await sb.auth.signInWithPassword({ email: LOGIN_EMAIL, password: pw });
+  if (error) {
+    err.textContent = 'Password incorreta.';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  } else {
+    showApp();
+  }
+}
+
 // ─── INIT ──────────────────────────────────────────────────────
-renderHome();
-syncFromSupabase();
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    showApp();
+  }
+})();
 </script>
 </body>
 </html>
