@@ -365,9 +365,40 @@ function saveState() {
   localStorage.setItem('mundial2026v2', JSON.stringify(state));
 }
 
+function showToast(msg, isError) {
+  let t = document.getElementById('sb-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'sb-toast';
+    t.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);padding:10px 18px;border-radius:8px;font-family:Barlow Condensed,sans-serif;font-size:0.9rem;letter-spacing:0.05em;z-index:9999;transition:opacity .4s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.background = isError ? '#7f1d1d' : '#0d3320';
+  t.style.color = isError ? '#fca5a5' : '#86efac';
+  t.style.border = `1px solid ${isError ? '#ef4444' : '#22c55e'}`;
+  t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.style.opacity = '0', 3000);
+}
+
+async function pushLocalToSupabase() {
+  const rows = [];
+  Object.entries(state).forEach(([itemId, stickers]) => {
+    Object.entries(stickers).forEach(([idx, s]) => {
+      if (s.have || s.repeat > 0)
+        rows.push({ item_id: itemId, sticker_idx: parseInt(idx), have: s.have, repeat_count: s.repeat || 0 });
+    });
+  });
+  if (!rows.length) return;
+  const { error } = await sb.from('cromos').upsert(rows, { onConflict: 'item_id,sticker_idx' });
+  if (error) showToast('Erro ao ligar ao Supabase: ' + error.message, true);
+  else showToast('Dados sincronizados com a nuvem ☁️', false);
+}
+
 async function syncFromSupabase() {
   const { data, error } = await sb.from('cromos').select('*');
-  if (error) { console.warn('Supabase sync error:', error); return; }
+  if (error) { showToast('Erro Supabase: ' + error.message, true); return; }
   if (data && data.length > 0) {
     state = {};
     data.forEach(row => {
@@ -377,6 +408,9 @@ async function syncFromSupabase() {
     localStorage.setItem('mundial2026v2', JSON.stringify(state));
     renderHome();
     if (currentItem) renderDetail();
+    showToast('Sincronizado ☁️', false);
+  } else {
+    await pushLocalToSupabase();
   }
 }
 
@@ -394,7 +428,7 @@ function setSticker(itemId, idx, data) {
     item_id: itemId, sticker_idx: idx,
     have: data.have, repeat_count: data.repeat || 0
   }, { onConflict: 'item_id,sticker_idx' }).then(({ error }) => {
-    if (error) console.warn('Supabase save error:', error);
+    if (error) showToast('Erro ao guardar: ' + error.message, true);
   });
 }
 function getItemStats(itemId) {
