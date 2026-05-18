@@ -341,6 +341,7 @@ const COUNTRIES = [
 
 const SPECIALS = [
   {id:'sp_fwc',icon:'🌟',name:'FWC - Especiais',code:'FWC',count:19},
+  {id:'sp_00',icon:'⭐',name:'Cromo 00',code:'00',count:1,startAt:0},
 ];
 
 const STICKER_COUNT = 20;
@@ -399,8 +400,9 @@ function setSticker(itemId, idx, data) {
 function getItemStats(itemId) {
   const item = ALL_ITEMS.find(x => x.id === itemId);
   const total = (item && item.count) ? item.count : STICKER_COUNT;
+  const startAt = (item && item.startAt !== undefined) ? item.startAt : 1;
   let have = 0, missing = 0, repeats = 0;
-  for (let i = 1; i <= total; i++) {
+  for (let i = startAt; i < startAt + total; i++) {
     const s = getSticker(itemId, i);
     if (s.have) { have++; repeats += (s.repeat || 0); } else missing++;
   }
@@ -516,8 +518,9 @@ function renderDetail() {
     </div>`;
 
   const itemCount = currentItem.count || STICKER_COUNT;
+  const startAt = currentItem.startAt !== undefined ? currentItem.startAt : 1;
   let html = '';
-  for (let i = 1; i <= itemCount; i++) {
+  for (let i = startAt; i < startAt + itemCount; i++) {
     const s = getSticker(item.id, i);
     let cls = 'sticker';
     let statusTxt = 'Falta';
@@ -557,7 +560,8 @@ function changeRepeat(idx, delta) {
 
 function markAll(have) {
   const itemCount = currentItem.count || STICKER_COUNT;
-  for (let i = 1; i <= itemCount; i++) {
+  const startAt = currentItem.startAt !== undefined ? currentItem.startAt : 1;
+  for (let i = startAt; i < startAt + itemCount; i++) {
     const s = getSticker(currentItem.id, i);
     s.have = have;
     if (!have) s.repeat = 0;
