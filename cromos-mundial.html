@@ -276,8 +276,11 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
       <div class="login-logo">⚽ MUNDIAL 2026</div>
       <div class="login-sub">Nuno e Patricinha</div>
       <input class="login-input" id="login-user" type="text" placeholder="Utilizador" autocomplete="off">
-      <input class="login-input" id="login-pw" type="password" placeholder="Password" autocomplete="off"
-        onkeydown="if(event.key==='Enter')doLogin()">
+      <div style="position:relative">
+        <input class="login-input" id="login-pw" type="password" placeholder="Password" autocomplete="off"
+          onkeydown="if(event.key==='Enter')doLogin()" style="width:100%;padding-right:44px">
+        <button type="button" onclick="togglePw()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:1rem" id="pw-eye">👁</button>
+      </div>
       <button class="login-btn" id="login-btn" onclick="doLogin()">Entrar</button>
       <div class="login-err" id="login-err"></div>
     </div>
@@ -665,6 +668,13 @@ function showApp() {
   loadLocalState();
   renderHome();
   syncFromSupabase();
+}
+
+function togglePw() {
+  const input = document.getElementById('login-pw');
+  const eye = document.getElementById('pw-eye');
+  if (input.type === 'password') { input.type = 'text'; eye.textContent = '🙈'; }
+  else { input.type = 'password'; eye.textContent = '👁'; }
 }
 
 function doLogout() {
