@@ -228,12 +228,15 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .empty { text-align: center; padding: 48px; color: var(--muted); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.1em; grid-column: 1/-1; }
 
 /* ─── BOLÃO ─── */
-.bolao-bar{padding:10px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bolao-bar{padding:10px 24px;border-bottom:1px solid var(--border);display:flex;flex-direction:column;gap:8px}
+.bolao-bar-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.bolao-player-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .bp-btn{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:7px 18px;border-radius:6px;border:2px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
 .bp-btn.nuno.sel{border-color:var(--blue);color:var(--blue);background:rgba(59,130,246,.12)}
 .bp-btn.patri.sel{border-color:var(--purple);color:var(--purple);background:rgba(168,85,247,.12)}
-.bolao-tabs{display:flex;gap:4px;margin-left:auto}
-.btab{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.btn-danger{border-color:var(--red)!important;color:var(--red)!important}
+.bolao-tabs{display:flex;gap:4px}
+.btab{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:5px 14px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s;flex:1;text-align:center}
 .btab.active{background:var(--gold);color:#000;border-color:var(--gold)}
 .bfase-bar{padding:8px 24px;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap}
 .bfase-btn{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
@@ -331,16 +334,113 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .login-btn:disabled { opacity: 0.5; cursor: default; }
 .login-err { font-family: 'Barlow Condensed', sans-serif; font-size: 0.82rem; color: var(--red); min-height: 18px; }
 
-@media (max-width: 600px) {
-  header { padding: 0 14px; }
-  .header-stats { gap: 12px; }
-  .hstat-n { font-size: 1.1rem; }
-  main, .sticker-grid { padding: 14px; }
-  .detail-hero { padding: 18px 14px; }
-  .detail-flag { font-size: 3rem; }
-  .detail-name { font-size: 2rem; }
-  .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
-  .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 7px; }
+@media (max-width: 640px) {
+  /* ── Safe area (iPhone home indicator) ── */
+  body { padding-bottom: env(safe-area-inset-bottom, 0px); }
+
+  /* ── Header ── */
+  header { padding: 0 12px; height: 52px; gap: 6px; }
+  .header-left { gap: 6px; flex: 1; min-width: 0; }
+  .logo {
+    font-size: 0.95rem; letter-spacing: 0.06em;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;
+  }
+  /* Hide Totobola shortcut from header on mobile — use landing instead */
+  .header-left .back-btn:not(#back-btn) { display: none; }
+  .back-btn { padding: 5px 8px; font-size: 0.7rem; gap: 3px; }
+  .theme-btn { width: 30px; height: 30px; font-size: 0.9rem; }
+  .header-stats { gap: 10px; }
+  .hstat-n { font-size: 1rem; }
+  .hstat-l { font-size: 0.5rem; }
+
+  /* ── Landing ── */
+  .landing-wrap { padding: 24px 16px; gap: 28px; }
+  .landing-logo { font-size: 1.9rem; }
+  .landing-cards { flex-direction: column; width: 100%; max-width: 380px; gap: 12px; }
+  .landing-card {
+    flex-direction: row; align-items: center;
+    padding: 20px 22px; gap: 18px;
+    min-width: unset; width: 100%; text-align: left;
+    border-radius: 14px;
+  }
+  .landing-card-icon { font-size: 2.4rem; flex-shrink: 0; }
+  .landing-card-title { font-size: 1.4rem; }
+  .landing-card-desc { text-align: left; font-size: 0.72rem; }
+
+  /* ── Login ── */
+  .login-wrap { padding: 0 16px; align-items: center; }
+  .login-card { padding: 30px 20px; border-radius: 14px; }
+  .login-logo { font-size: 1.7rem; }
+
+  /* ── Controls (filter bar) ── */
+  .controls {
+    padding: 8px 12px; gap: 6px;
+    overflow-x: auto; flex-wrap: nowrap;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .controls::-webkit-scrollbar { display: none; }
+  .filter-btn { white-space: nowrap; flex-shrink: 0; font-size: 0.72rem; padding: 5px 10px; }
+  .search-wrap { flex-shrink: 0; }
+  .search-input { width: 130px; font-size: 0.8rem; }
+
+  /* ── Country grid ── */
+  main { padding: 12px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 7px; margin-bottom: 20px; }
+  .ccard { padding: 12px 8px 10px; }
+  .ccard-flag { font-size: 1.9rem; }
+  .ccard-name { font-size: 0.72rem; }
+
+  /* ── Sticker grid ── */
+  .sticker-grid { padding: 10px 12px; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; }
+
+  /* ── Detail ── */
+  .detail-hero { padding: 16px 12px; gap: 12px; flex-direction: row; flex-wrap: nowrap; }
+  .detail-flag { font-size: 2.6rem; }
+  .detail-name { font-size: 1.8rem; }
+  .detail-meta { gap: 7px; }
+  .dmeta { padding: 7px 12px; }
+  .dmeta-n { font-size: 1.3rem; }
+  .detail-actions { padding: 8px 12px; gap: 6px; }
+  .act-btn { font-size: 0.7rem; padding: 5px 10px; }
+
+  /* ── Bolão bar ── */
+  .bolao-bar { padding: 10px 12px; gap: 8px; }
+  .bolao-bar-top { gap: 6px; }
+  .bolao-player-lbl { display: none; }
+  .bp-btn { padding: 7px 0; flex: 1; font-size: 0.82rem; text-align: center; }
+  .back-btn#admin-toggle { margin-left: 0; }
+  .bolao-tabs { gap: 6px; }
+  .btab { padding: 8px 6px; font-size: 0.75rem; }
+
+  /* ── Phase bar — horizontal scroll ── */
+  .bfase-bar {
+    padding: 6px 12px; gap: 5px;
+    overflow-x: auto; flex-wrap: nowrap;
+    scrollbar-width: none; -webkit-overflow-scrolling: touch;
+  }
+  .bfase-bar::-webkit-scrollbar { display: none; }
+  .bfase-btn { white-space: nowrap; flex-shrink: 0; font-size: 0.72rem; padding: 5px 10px; }
+
+  /* ── Game cards ── */
+  .bolao-content { padding: 10px 12px; }
+  .jcard { padding: 8px 8px; gap: 4px; }
+  .jflag { font-size: 1.2rem; }
+  .jname { font-size: 0.68rem; }
+  .jmid { min-width: 90px; gap: 3px; }
+  .sinp { width: 29px; height: 29px; font-size: 1rem; }
+  .jtime-info { font-size: 0.58rem; }
+
+  /* ── Ranking ── */
+  .rank-wrap { padding: 12px; }
+  .rank-card { padding: 14px 10px; }
+  .rank-pts { font-size: 2.2rem; }
+  .rank-sub { font-size: 0.65rem; }
+  .rank-table td, .rank-table th { padding: 6px 7px; font-size: 0.78rem; }
+
+  /* ── Bonus ── */
+  .bonus-wrap { padding: 12px; }
+  .bonus-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .bonus-card { padding: 10px 11px; }
 }
 
 /* ─── LIGHT MODE ─── */
@@ -471,11 +571,13 @@ body.light .jpts.p0 { background: #f1f5f9; }
 <!-- ═══ VIEW: BOLÃO ═══ -->
 <div class="view" id="view-bolao">
   <div class="bolao-bar">
-    <span style="font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">Jogador:</span>
-    <button class="bp-btn nuno" id="bp-nuno" onclick="setBolaoPlayer('nuno')">Nuno</button>
-    <button class="bp-btn patri" id="bp-patri" onclick="setBolaoPlayer('patricinha')">Patricinha</button>
-    <button class="back-btn" id="admin-toggle" onclick="toggleAdmin()" style="margin-left:8px">⚙️ Resultados</button>
-    <button class="back-btn" onclick="limparResultados()" style="border-color:var(--red);color:var(--red)">🗑 Limpar Resultados</button>
+    <div class="bolao-bar-top">
+      <span class="bolao-player-lbl">Jogador:</span>
+      <button class="bp-btn nuno" id="bp-nuno" onclick="setBolaoPlayer('nuno')">Nuno</button>
+      <button class="bp-btn patri" id="bp-patri" onclick="setBolaoPlayer('patricinha')">Patricinha</button>
+      <button class="back-btn" id="admin-toggle" onclick="toggleAdmin()">⚙️ <span class="btn-lbl">Resultados</span></button>
+      <button class="back-btn btn-danger" onclick="limparResultados()">🗑 <span class="btn-lbl">Limpar</span></button>
+    </div>
     <div class="bolao-tabs">
       <button class="btab active" id="bt-jogos" onclick="setBolaoTab('jogos')">Jogos</button>
       <button class="btab" id="bt-ranking" onclick="setBolaoTab('ranking')">Ranking</button>
@@ -1128,7 +1230,7 @@ function setBolaoFase(fase) {
 function toggleAdmin() {
   adminMode = !adminMode;
   const btn = document.getElementById('admin-toggle');
-  btn.textContent = adminMode ? '🔐 Fechar' : '⚙️ Resultados';
+  btn.innerHTML = adminMode ? '🔐 <span class="btn-lbl">Fechar</span>' : '⚙️ <span class="btn-lbl">Resultados</span>';
   btn.style.borderColor = adminMode ? 'var(--blue)' : '';
   btn.style.color = adminMode ? 'var(--blue)' : '';
   renderBolaoJogos();
