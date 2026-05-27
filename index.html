@@ -245,7 +245,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bfase-btn{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
 .bfase-btn.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .bolao-content{padding:20px 24px;max-width:860px;margin:0 auto}
-.grupo-lbl{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.grupo-lbl{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;row-gap:6px}
 .jcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .jteam{display:flex;align-items:center;gap:6px}
 .jteam.r{flex-direction:row-reverse}
@@ -296,9 +296,10 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bonus-hit{background:rgba(34,197,94,.15);color:var(--green);border:1px solid #1a4a2a;font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
 .bonus-miss{background:rgba(239,68,68,.1);color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
 .bonus-pend{color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:.65rem;white-space:nowrap}
-.jtime-info{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.jtime-info{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:1px;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
 .jtime-info.locked{color:var(--red)}
 .jtime-info.waiting{color:var(--gold)}
+.grp-badge{font-family:'Bebas Neue',sans-serif;font-size:.65rem;letter-spacing:.1em;color:var(--surface);background:var(--muted);padding:1px 5px;border-radius:3px;line-height:1.4}
 .jcard.jlocked{border-color:rgba(239,68,68,.25)}
 
 /* ─── LANDING ─── */
@@ -1252,25 +1253,41 @@ function renderBolaoFaseBar() {
       ${f.nome} <span style="opacity:.55;font-size:.65rem">×${f.mult}</span></button>`
   ).join('');
 }
+function getMatchday(jogo) {
+  const suf = jogo.id.slice(-2);
+  if(suf==='01'||suf==='23') return 1;
+  if(suf==='02'||suf==='13') return 2;
+  return 3;
+}
 function renderBolaoJogos() {
   const jogos = TODOS_JOGOS.filter(j=>j.fase===bolaoFase);
   const c = document.getElementById('bolao-games');
   if(bolaoFase==='grupo') {
-    const groups = {};
-    jogos.forEach(j=>{if(!groups[j.grupo])groups[j.grupo]=[];groups[j.grupo].push(j);});
-    c.innerHTML = Object.entries(groups).map(([g,gj])=>
-      `<div class="grupo-lbl">Grupo ${g}
-        ${bolaoPlayer?`<button onclick="apagarGrupo('${g}')"
-          style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.06em;
-          text-transform:uppercase;padding:2px 9px;border:1px solid var(--red);background:transparent;
-          color:var(--red);border-radius:4px;cursor:pointer;opacity:.75">✕ Apagar</button>`:''}
-      </div>`+gj.map(j=>jogoCardHTML(j)).join('')
-    ).join('');
+    // Group by matchday, sort each matchday by kickoff time
+    const byMD = {1:[],2:[],3:[]};
+    jogos.forEach(j=>byMD[getMatchday(j)].push(j));
+    [1,2,3].forEach(md=>byMD[md].sort((a,b)=>(a.dt||'').localeCompare(b.dt||'')));
+    c.innerHTML = [1,2,3].map(md=>{
+      const mj = byMD[md];
+      if(!mj.length) return '';
+      // Collect unique groups in this matchday (in kickoff order)
+      const grupasOrdered = [...new Set(mj.map(j=>j.grupo))];
+      const apagarBtns = bolaoPlayer ? grupasOrdered.map(g=>
+        `<button onclick="apagarGrupo('${g}')"
+          style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.05em;
+          text-transform:uppercase;padding:2px 7px;border:1px solid var(--red);background:transparent;
+          color:var(--red);border-radius:4px;cursor:pointer;opacity:.7">✕ Grp ${g}</button>`
+      ).join('') : '';
+      return `<div class="grupo-lbl" style="flex-wrap:wrap;gap:6px">
+        <span>Jornada ${md}</span>
+        ${apagarBtns?`<div style="display:flex;flex-wrap:wrap;gap:4px">${apagarBtns}</div>`:''}
+      </div>`+mj.map(j=>jogoCardHTML(j,true)).join('');
+    }).join('');
   } else {
     c.innerHTML = jogos.map(j=>jogoCardHTML(j)).join('')||'<div class="empty">Sem jogos nesta fase</div>';
   }
 }
-function jogoCardHTML(jogo) {
+function jogoCardHTML(jogo, showGrpBadge=false) {
   const mult=getFaseMult(jogo.fase);
   const locked=isMatchLocked(jogo);
   const isKO = jogo.fase!=='grupo';
@@ -1285,8 +1302,11 @@ function jogoCardHTML(jogo) {
   const ptsHTML=pts===null
     ?`<span class="jpts pend">sem resultado</span>`
     :`<span class="jpts ${pts>=5*mult?'p5':pts>=3*mult?'p3':pts>=2*mult?'p2':pts>=1?'p1':'p0'}">${pts} pts</span>`;
+  // Group badge (shown when rendering by matchday)
+  const grpBadge = showGrpBadge&&jogo.grupo
+    ? `<span class="grp-badge">GRP ${jogo.grupo}</span>` : '';
   // Time indicator
-  const timeHTML = jogo.dt ? `<div class="jtime-info${locked?' locked':''}">${formatMatchTime(jogo.dt)}</div>` : '';
+  const timeHTML = jogo.dt ? `<div class="jtime-info${locked?' locked':''}">${grpBadge}${formatMatchTime(jogo.dt)}</div>` : grpBadge?`<div class="jtime-info">${grpBadge}</div>`:'';
   // Penalty winner selector for KO draws
   const isDraw = res && res.casa===res.fora && isKO;
   const casaId = isKO?resolveLabel(jogo.casa):jogo.casa;
