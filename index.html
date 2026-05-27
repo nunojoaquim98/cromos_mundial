@@ -283,6 +283,10 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bonus-pts-lbl{font-size:.68rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;margin-bottom:8px}
 .bonus-sel{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:6px;font-family:'Barlow',sans-serif;font-size:.85rem;outline:none}
 .bonus-sel:focus{border-color:var(--gold)}
+.jtime-info{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:1px}
+.jtime-info.locked{color:var(--red)}
+.jtime-info.waiting{color:var(--gold)}
+.jcard.jlocked{border-color:rgba(239,68,68,.25)}
 
 /* ─── LANDING ─── */
 .landing-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:32px;background:radial-gradient(ellipse at 50% 0%,#0d1f3c 0%,var(--bg) 65%);position:relative}
@@ -852,6 +856,23 @@ const FASES = [
   {id:'meias',nome:'Meias-Finais',mult:5},{id:'terceiro',nome:'3º Lugar',mult:4},
   {id:'final',nome:'Final',mult:6},
 ];
+// Calendário WC2026 — UTC. Slots por grupo: [md1_01, md1_23, md2_02, md2_13, md3_03, md3_12]
+// pares: MD1=[0,1],[2,3]  MD2=[0,2],[1,3]  MD3=[0,3],[1,2]
+const GRUPO_SCHED = {
+  A:['2026-06-11T21:00Z','2026-06-12T00:00Z','2026-06-19T21:00Z','2026-06-20T00:00Z','2026-06-26T21:00Z','2026-06-26T21:00Z'],
+  B:['2026-06-12T18:00Z','2026-06-12T21:00Z','2026-06-20T18:00Z','2026-06-20T21:00Z','2026-06-27T21:00Z','2026-06-27T21:00Z'],
+  C:['2026-06-13T00:00Z','2026-06-13T18:00Z','2026-06-21T00:00Z','2026-06-21T18:00Z','2026-06-27T00:00Z','2026-06-27T00:00Z'],
+  D:['2026-06-13T21:00Z','2026-06-14T00:00Z','2026-06-21T21:00Z','2026-06-22T00:00Z','2026-06-28T21:00Z','2026-06-28T21:00Z'],
+  E:['2026-06-14T18:00Z','2026-06-14T21:00Z','2026-06-22T18:00Z','2026-06-22T21:00Z','2026-06-29T18:00Z','2026-06-29T18:00Z'],
+  F:['2026-06-15T00:00Z','2026-06-15T18:00Z','2026-06-23T00:00Z','2026-06-23T18:00Z','2026-06-29T21:00Z','2026-06-29T21:00Z'],
+  G:['2026-06-15T21:00Z','2026-06-16T00:00Z','2026-06-23T21:00Z','2026-06-24T00:00Z','2026-06-30T18:00Z','2026-06-30T18:00Z'],
+  H:['2026-06-16T18:00Z','2026-06-16T21:00Z','2026-06-24T18:00Z','2026-06-24T21:00Z','2026-06-30T21:00Z','2026-06-30T21:00Z'],
+  I:['2026-06-17T00:00Z','2026-06-17T18:00Z','2026-06-25T00:00Z','2026-06-25T18:00Z','2026-07-01T18:00Z','2026-07-01T18:00Z'],
+  J:['2026-06-17T21:00Z','2026-06-18T00:00Z','2026-06-25T21:00Z','2026-06-26T00:00Z','2026-07-01T21:00Z','2026-07-01T21:00Z'],
+  K:['2026-06-18T18:00Z','2026-06-18T21:00Z','2026-06-26T18:00Z','2026-06-26T21:00Z','2026-07-02T18:00Z','2026-07-02T18:00Z'],
+  L:['2026-06-19T00:00Z','2026-06-19T18:00Z','2026-06-27T00:00Z','2026-06-27T18:00Z','2026-07-02T21:00Z','2026-07-02T21:00Z'],
+};
+const PAIR_SLOT = {'01':0,'23':1,'02':2,'13':3,'03':4,'12':5};
 const BONUS_ITEMS = [
   {id:'campeao',nome:'🏆 Campeão',pts:25,tipo:'team'},
   {id:'vice',nome:'🥈 Vice-Campeão',pts:15,tipo:'team'},
@@ -861,28 +882,48 @@ const BONUS_ITEMS = [
 function gerarJogosGrupo() {
   const jogos = [], pairs = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
   Object.entries(GRUPOS).forEach(([g,t]) => {
-    pairs.forEach(([a,b]) => jogos.push({id:`G${g}_${a}${b}`,fase:'grupo',grupo:g,casa:t[a],fora:t[b]}));
+    pairs.forEach(([a,b]) => {
+      const key = `${a}${b}`;
+      const slot = PAIR_SLOT[key];
+      const dt = GRUPO_SCHED[g] ? GRUPO_SCHED[g][slot] : null;
+      jogos.push({id:`G${g}_${a}${b}`,fase:'grupo',grupo:g,casa:t[a],fora:t[b],dt});
+    });
   });
   return jogos;
 }
 const JOGOS_KO = [
-  {id:'R32_01',fase:'dezasseis',casa:'1ºA',fora:'2ºC'},{id:'R32_02',fase:'dezasseis',casa:'1ºC',fora:'2ºA'},
-  {id:'R32_03',fase:'dezasseis',casa:'1ºB',fora:'2ºD'},{id:'R32_04',fase:'dezasseis',casa:'1ºD',fora:'2ºB'},
-  {id:'R32_05',fase:'dezasseis',casa:'1ºE',fora:'2ºG'},{id:'R32_06',fase:'dezasseis',casa:'1ºG',fora:'2ºE'},
-  {id:'R32_07',fase:'dezasseis',casa:'1ºF',fora:'2ºH'},{id:'R32_08',fase:'dezasseis',casa:'1ºH',fora:'2ºF'},
-  {id:'R32_09',fase:'dezasseis',casa:'1ºI',fora:'2ºK'},{id:'R32_10',fase:'dezasseis',casa:'1ºK',fora:'2ºI'},
-  {id:'R32_11',fase:'dezasseis',casa:'1ºJ',fora:'2ºL'},{id:'R32_12',fase:'dezasseis',casa:'1ºL',fora:'2ºJ'},
-  {id:'R32_13',fase:'dezasseis',casa:'3TH_0',fora:'3TH_7'},{id:'R32_14',fase:'dezasseis',casa:'3TH_1',fora:'3TH_6'},
-  {id:'R32_15',fase:'dezasseis',casa:'3TH_2',fora:'3TH_5'},{id:'R32_16',fase:'dezasseis',casa:'3TH_3',fora:'3TH_4'},
-  {id:'R16_01',fase:'oitavos',casa:'VR32_01',fora:'VR32_03'},{id:'R16_02',fase:'oitavos',casa:'VR32_02',fora:'VR32_04'},
-  {id:'R16_03',fase:'oitavos',casa:'VR32_05',fora:'VR32_07'},{id:'R16_04',fase:'oitavos',casa:'VR32_06',fora:'VR32_08'},
-  {id:'R16_05',fase:'oitavos',casa:'VR32_09',fora:'VR32_11'},{id:'R16_06',fase:'oitavos',casa:'VR32_10',fora:'VR32_12'},
-  {id:'R16_07',fase:'oitavos',casa:'VR32_13',fora:'VR32_15'},{id:'R16_08',fase:'oitavos',casa:'VR32_14',fora:'VR32_16'},
-  {id:'QF_1',fase:'quartos',casa:'VR16_01',fora:'VR16_02'},{id:'QF_2',fase:'quartos',casa:'VR16_03',fora:'VR16_04'},
-  {id:'QF_3',fase:'quartos',casa:'VR16_05',fora:'VR16_06'},{id:'QF_4',fase:'quartos',casa:'VR16_07',fora:'VR16_08'},
-  {id:'SF_1',fase:'meias',casa:'VQF_1',fora:'VQF_2'},{id:'SF_2',fase:'meias',casa:'VQF_3',fora:'VQF_4'},
-  {id:'3RD',fase:'terceiro',casa:'PSF_1',fora:'PSF_2'},
-  {id:'FINAL',fase:'final',casa:'VSF_1',fora:'VSF_2'},
+  {id:'R32_01',fase:'dezasseis',dt:'2026-07-04T18:00Z',casa:'1ºA',fora:'2ºC'},
+  {id:'R32_02',fase:'dezasseis',dt:'2026-07-04T21:00Z',casa:'1ºC',fora:'2ºA'},
+  {id:'R32_03',fase:'dezasseis',dt:'2026-07-05T00:00Z',casa:'1ºB',fora:'2ºD'},
+  {id:'R32_04',fase:'dezasseis',dt:'2026-07-05T18:00Z',casa:'1ºD',fora:'2ºB'},
+  {id:'R32_05',fase:'dezasseis',dt:'2026-07-05T21:00Z',casa:'1ºE',fora:'2ºG'},
+  {id:'R32_06',fase:'dezasseis',dt:'2026-07-06T00:00Z',casa:'1ºG',fora:'2ºE'},
+  {id:'R32_07',fase:'dezasseis',dt:'2026-07-06T18:00Z',casa:'1ºF',fora:'2ºH'},
+  {id:'R32_08',fase:'dezasseis',dt:'2026-07-06T21:00Z',casa:'1ºH',fora:'2ºF'},
+  {id:'R32_09',fase:'dezasseis',dt:'2026-07-07T00:00Z',casa:'1ºI',fora:'2ºK'},
+  {id:'R32_10',fase:'dezasseis',dt:'2026-07-07T18:00Z',casa:'1ºK',fora:'2ºI'},
+  {id:'R32_11',fase:'dezasseis',dt:'2026-07-07T21:00Z',casa:'1ºJ',fora:'2ºL'},
+  {id:'R32_12',fase:'dezasseis',dt:'2026-07-08T00:00Z',casa:'1ºL',fora:'2ºJ'},
+  {id:'R32_13',fase:'dezasseis',dt:'2026-07-08T18:00Z',casa:'3TH_0',fora:'3TH_7'},
+  {id:'R32_14',fase:'dezasseis',dt:'2026-07-08T21:00Z',casa:'3TH_1',fora:'3TH_6'},
+  {id:'R32_15',fase:'dezasseis',dt:'2026-07-09T00:00Z',casa:'3TH_2',fora:'3TH_5'},
+  {id:'R32_16',fase:'dezasseis',dt:'2026-07-09T21:00Z',casa:'3TH_3',fora:'3TH_4'},
+  {id:'R16_01',fase:'oitavos',dt:'2026-07-11T18:00Z',casa:'VR32_01',fora:'VR32_03'},
+  {id:'R16_02',fase:'oitavos',dt:'2026-07-11T21:00Z',casa:'VR32_02',fora:'VR32_04'},
+  {id:'R16_03',fase:'oitavos',dt:'2026-07-12T18:00Z',casa:'VR32_05',fora:'VR32_07'},
+  {id:'R16_04',fase:'oitavos',dt:'2026-07-12T21:00Z',casa:'VR32_06',fora:'VR32_08'},
+  {id:'R16_05',fase:'oitavos',dt:'2026-07-13T18:00Z',casa:'VR32_09',fora:'VR32_11'},
+  {id:'R16_06',fase:'oitavos',dt:'2026-07-13T21:00Z',casa:'VR32_10',fora:'VR32_12'},
+  {id:'R16_07',fase:'oitavos',dt:'2026-07-14T18:00Z',casa:'VR32_13',fora:'VR32_15'},
+  {id:'R16_08',fase:'oitavos',dt:'2026-07-14T21:00Z',casa:'VR32_14',fora:'VR32_16'},
+  {id:'QF_1',fase:'quartos',dt:'2026-07-17T18:00Z',casa:'VR16_01',fora:'VR16_02'},
+  {id:'QF_2',fase:'quartos',dt:'2026-07-17T21:00Z',casa:'VR16_03',fora:'VR16_04'},
+  {id:'QF_3',fase:'quartos',dt:'2026-07-18T18:00Z',casa:'VR16_05',fora:'VR16_06'},
+  {id:'QF_4',fase:'quartos',dt:'2026-07-18T21:00Z',casa:'VR16_07',fora:'VR16_08'},
+  {id:'SF_1',fase:'meias',dt:'2026-07-21T21:00Z',casa:'VQF_1',fora:'VQF_2'},
+  {id:'SF_2',fase:'meias',dt:'2026-07-22T21:00Z',casa:'VQF_3',fora:'VQF_4'},
+  {id:'3RD',fase:'terceiro',dt:'2026-07-25T18:00Z',casa:'PSF_1',fora:'PSF_2'},
+  {id:'FINAL',fase:'final',dt:'2026-07-26T21:00Z',casa:'VSF_1',fora:'VSF_2'},
 ];
 const TODOS_JOGOS = [...gerarJogosGrupo(), ...JOGOS_KO];
 
@@ -1007,6 +1048,30 @@ function getTeamInfo(id) {
 }
 function getFaseMult(fase) { return (FASES.find(f=>f.id===fase)||{mult:1}).mult; }
 
+// ─── MATCH LOCK ────────────────────────────────────────────────
+function isMatchLocked(jogo) {
+  if(!jogo.dt) return false;
+  return new Date() >= new Date(jogo.dt);
+}
+function formatMatchTime(dt) {
+  if(!dt) return '';
+  const d = new Date(dt);
+  const now = new Date();
+  if(now >= d) return '🔒 Fechado';
+  const diff = d - now;
+  const totalH = Math.floor(diff / 3600000);
+  if(totalH < 24) {
+    const h = totalH;
+    const m = Math.floor((diff % 3600000) / 60000);
+    return `⏳ ${h}h${m>0?' '+m+'m':''}`;
+  }
+  const day = String(d.getDate()).padStart(2,'0');
+  const mon = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()];
+  const hh = String(d.getHours()).padStart(2,'0');
+  const mm = String(d.getMinutes()).padStart(2,'0');
+  return `📅 ${day} ${mon} · ${hh}:${mm}`;
+}
+
 function openBolao() {
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-detail').classList.remove('active');
@@ -1070,6 +1135,7 @@ function renderBolaoJogos() {
 }
 function jogoCardHTML(jogo) {
   const mult=getFaseMult(jogo.fase);
+  const locked=isMatchLocked(jogo);
   const isKO = jogo.fase!=='grupo';
   const casa=isKO?getTeamDisplay(jogo.casa):getTeamInfo(jogo.casa);
   const fora=isKO?getTeamDisplay(jogo.fora):getTeamInfo(jogo.fora);
@@ -1082,6 +1148,8 @@ function jogoCardHTML(jogo) {
   const ptsHTML=pts===null
     ?`<span class="jpts pend">sem resultado</span>`
     :`<span class="jpts ${pts>=5*mult?'p5':pts>=3*mult?'p3':pts>=2*mult?'p2':pts>=1?'p1':'p0'}">${pts} pts</span>`;
+  // Time indicator
+  const timeHTML = jogo.dt ? `<div class="jtime-info${locked?' locked':''}">${formatMatchTime(jogo.dt)}</div>` : '';
   // Penalty winner selector for KO draws
   const isDraw = res && res.casa===res.fora && isKO;
   const casaId = isKO?resolveLabel(jogo.casa):jogo.casa;
@@ -1093,25 +1161,31 @@ function jogoCardHTML(jogo) {
       <button onclick="setPenVencedor('${jogo.id}','${foraId}')" style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:${res.vencedor===foraId?'var(--blue)':'transparent'};color:${res.vencedor===foraId?'#fff':'var(--muted)'};cursor:pointer">${fora.flag}</button>
     </div>` : isDraw ? `<div style="font-size:.65rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em">⚽ Penáltis</div>` : '';
 
+  // Result area: admin can always enter/edit result after lock; non-admin just sees "a aguardar"
   const resultHTML = res!=null
     ? `<div class="jsrow" style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--blue)">${res.casa} — ${res.fora}</div>${penHTML}`
     : adminMode&&teamsKnown ? `<div class="jsrow">
         <input class="rinp" type="number" min="0" max="30" placeholder="?" id="rh_${jogo.id}" onchange="saveResultado('${jogo.id}')">
         <span class="ssep" style="color:var(--blue)">-</span>
         <input class="rinp" type="number" min="0" max="30" placeholder="?" id="ra_${jogo.id}" onchange="saveResultado('${jogo.id}')">
-      </div>` : '';
+      </div>`
+    : locked&&teamsKnown ? `<div class="jtime-info waiting">⏳ A aguardar resultado</div>` : '';
 
+  // Bets disabled if: no player, result exists, teams unknown, OR match is locked
+  const betDisabled = !bolaoPlayer||res!=null||!teamsKnown||locked;
+  const cardCls = 'jcard' + (!teamsKnown?' ':'') + (locked?' jlocked':'');
   const cardStyle = !teamsKnown ? 'opacity:.55' : '';
-  return `<div class="jcard" style="${cardStyle}">
+  return `<div class="${cardCls}" style="${cardStyle}">
     <div class="jteam"><span class="jflag">${casa.flag}</span><span class="jname">${casa.name}</span></div>
     <div class="jmid">
+      ${timeHTML}
       <div class="jsrow">
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="ph_${jogo.id}"
-          ${ph!==null?`value="${ph}"`:''}${!bolaoPlayer||res!=null||!teamsKnown?' disabled':''}
+          ${ph!==null?`value="${ph}"`:''}${betDisabled?' disabled':''}
           onchange="saveAposta('${jogo.id}')">
         <span class="ssep">×</span>
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="pa_${jogo.id}"
-          ${pa!==null?`value="${pa}"`:''}${!bolaoPlayer||res!=null||!teamsKnown?' disabled':''}
+          ${pa!==null?`value="${pa}"`:''}${betDisabled?' disabled':''}
           onchange="saveAposta('${jogo.id}')">
       </div>
       ${resultHTML}
