@@ -832,15 +832,30 @@ function getBest3rdTeams() {
   });
 }
 
+function isGroupComplete(grupo) {
+  const jogos = TODOS_JOGOS.filter(j=>j.fase==='grupo'&&j.grupo===grupo);
+  return jogos.length>0 && jogos.every(j=>bolaoResultados[j.id]!=null);
+}
+
+function allGroupsComplete() {
+  return Object.keys(GRUPOS).every(g=>isGroupComplete(g));
+}
+
 function resolveLabel(label) {
   if(!label) return null;
   if(COUNTRIES.find(c=>c.id===label)) return label;
-  // "1ºA", "2ºB" etc.
+  // "1ºA", "2ºB" etc. — só resolve se o grupo estiver completo
   const gm=label.match(/^(\d)º([A-L])$/);
-  if(gm){const s=getGroupStandings(gm[2]);return s[parseInt(gm[1])-1]?.team||null;}
-  // "3TH_N" - best 3rd place ranked N
+  if(gm){
+    if(!isGroupComplete(gm[2])) return null;
+    const s=getGroupStandings(gm[2]);return s[parseInt(gm[1])-1]?.team||null;
+  }
+  // "3TH_N" — só resolve se todos os grupos estiverem completos
   const tm=label.match(/^3TH_(\d+)$/);
-  if(tm){return getBest3rdTeams()[parseInt(tm[1])]?.team||null;}
+  if(tm){
+    if(!allGroupsComplete()) return null;
+    return getBest3rdTeams()[parseInt(tm[1])]?.team||null;
+  }
   // "VGAME_ID" - winner
   const vm=label.match(/^V(.+)$/);
   if(vm){
