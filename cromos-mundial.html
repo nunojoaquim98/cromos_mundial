@@ -763,10 +763,10 @@ const GRUPOS = {
   K:['por','cod','uzb','col'], L:['eng','cro','gha','pan'],
 };
 const FASES = [
-  {id:'grupo',nome:'Grupos',mult:1},{id:'oitavos',nome:'Oitavos',mult:2},
-  {id:'dezasseis',nome:'16 Avos',mult:2},{id:'quartos',nome:'Quartos',mult:3},
-  {id:'meias',nome:'Meias-Finais',mult:4},{id:'terceiro',nome:'3º Lugar',mult:3},
-  {id:'final',nome:'Final',mult:5},
+  {id:'grupo',nome:'Grupos',mult:1},{id:'dezasseis',nome:'16 Avos',mult:2},
+  {id:'oitavos',nome:'Oitavos',mult:3},{id:'quartos',nome:'Quartos',mult:4},
+  {id:'meias',nome:'Meias-Finais',mult:5},{id:'terceiro',nome:'3º Lugar',mult:4},
+  {id:'final',nome:'Final',mult:6},
 ];
 const BONUS_ITEMS = [
   {id:'campeao',nome:'🏆 Campeão',pts:25,tipo:'team'},
@@ -782,18 +782,18 @@ function gerarJogosGrupo() {
   return jogos;
 }
 const JOGOS_KO = [
-  {id:'R32_01',fase:'oitavos',casa:'1ºA',fora:'2ºC'},{id:'R32_02',fase:'oitavos',casa:'1ºC',fora:'2ºA'},
-  {id:'R32_03',fase:'oitavos',casa:'1ºB',fora:'2ºD'},{id:'R32_04',fase:'oitavos',casa:'1ºD',fora:'2ºB'},
-  {id:'R32_05',fase:'oitavos',casa:'1ºE',fora:'2ºG'},{id:'R32_06',fase:'oitavos',casa:'1ºG',fora:'2ºE'},
-  {id:'R32_07',fase:'oitavos',casa:'1ºF',fora:'2ºH'},{id:'R32_08',fase:'oitavos',casa:'1ºH',fora:'2ºF'},
-  {id:'R32_09',fase:'oitavos',casa:'1ºI',fora:'2ºK'},{id:'R32_10',fase:'oitavos',casa:'1ºK',fora:'2ºI'},
-  {id:'R32_11',fase:'oitavos',casa:'1ºJ',fora:'2ºL'},{id:'R32_12',fase:'oitavos',casa:'1ºL',fora:'2ºJ'},
-  {id:'R32_13',fase:'oitavos',casa:'3TH_0',fora:'3TH_7'},{id:'R32_14',fase:'oitavos',casa:'3TH_1',fora:'3TH_6'},
-  {id:'R32_15',fase:'oitavos',casa:'3TH_2',fora:'3TH_5'},{id:'R32_16',fase:'oitavos',casa:'3TH_3',fora:'3TH_4'},
-  {id:'R16_01',fase:'dezasseis',casa:'VR32_01',fora:'VR32_03'},{id:'R16_02',fase:'dezasseis',casa:'VR32_02',fora:'VR32_04'},
-  {id:'R16_03',fase:'dezasseis',casa:'VR32_05',fora:'VR32_07'},{id:'R16_04',fase:'dezasseis',casa:'VR32_06',fora:'VR32_08'},
-  {id:'R16_05',fase:'dezasseis',casa:'VR32_09',fora:'VR32_11'},{id:'R16_06',fase:'dezasseis',casa:'VR32_10',fora:'VR32_12'},
-  {id:'R16_07',fase:'dezasseis',casa:'VR32_13',fora:'VR32_15'},{id:'R16_08',fase:'dezasseis',casa:'VR32_14',fora:'VR32_16'},
+  {id:'R32_01',fase:'dezasseis',casa:'1ºA',fora:'2ºC'},{id:'R32_02',fase:'dezasseis',casa:'1ºC',fora:'2ºA'},
+  {id:'R32_03',fase:'dezasseis',casa:'1ºB',fora:'2ºD'},{id:'R32_04',fase:'dezasseis',casa:'1ºD',fora:'2ºB'},
+  {id:'R32_05',fase:'dezasseis',casa:'1ºE',fora:'2ºG'},{id:'R32_06',fase:'dezasseis',casa:'1ºG',fora:'2ºE'},
+  {id:'R32_07',fase:'dezasseis',casa:'1ºF',fora:'2ºH'},{id:'R32_08',fase:'dezasseis',casa:'1ºH',fora:'2ºF'},
+  {id:'R32_09',fase:'dezasseis',casa:'1ºI',fora:'2ºK'},{id:'R32_10',fase:'dezasseis',casa:'1ºK',fora:'2ºI'},
+  {id:'R32_11',fase:'dezasseis',casa:'1ºJ',fora:'2ºL'},{id:'R32_12',fase:'dezasseis',casa:'1ºL',fora:'2ºJ'},
+  {id:'R32_13',fase:'dezasseis',casa:'3TH_0',fora:'3TH_7'},{id:'R32_14',fase:'dezasseis',casa:'3TH_1',fora:'3TH_6'},
+  {id:'R32_15',fase:'dezasseis',casa:'3TH_2',fora:'3TH_5'},{id:'R32_16',fase:'dezasseis',casa:'3TH_3',fora:'3TH_4'},
+  {id:'R16_01',fase:'oitavos',casa:'VR32_01',fora:'VR32_03'},{id:'R16_02',fase:'oitavos',casa:'VR32_02',fora:'VR32_04'},
+  {id:'R16_03',fase:'oitavos',casa:'VR32_05',fora:'VR32_07'},{id:'R16_04',fase:'oitavos',casa:'VR32_06',fora:'VR32_08'},
+  {id:'R16_05',fase:'oitavos',casa:'VR32_09',fora:'VR32_11'},{id:'R16_06',fase:'oitavos',casa:'VR32_10',fora:'VR32_12'},
+  {id:'R16_07',fase:'oitavos',casa:'VR32_13',fora:'VR32_15'},{id:'R16_08',fase:'oitavos',casa:'VR32_14',fora:'VR32_16'},
   {id:'QF_1',fase:'quartos',casa:'VR16_01',fora:'VR16_02'},{id:'QF_2',fase:'quartos',casa:'VR16_03',fora:'VR16_04'},
   {id:'QF_3',fase:'quartos',casa:'VR16_05',fora:'VR16_06'},{id:'QF_4',fase:'quartos',casa:'VR16_07',fora:'VR16_08'},
   {id:'SF_1',fase:'meias',casa:'VQF_1',fora:'VQF_2'},{id:'SF_2',fase:'meias',casa:'VQF_3',fora:'VQF_4'},
