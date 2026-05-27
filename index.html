@@ -782,25 +782,107 @@ function gerarJogosGrupo() {
   return jogos;
 }
 const JOGOS_KO = [
-  {id:'R32_01',fase:'oitavos',casa:'1º A',fora:'2º C'},{id:'R32_02',fase:'oitavos',casa:'1º C',fora:'2º A'},
-  {id:'R32_03',fase:'oitavos',casa:'1º B',fora:'2º D'},{id:'R32_04',fase:'oitavos',casa:'1º D',fora:'2º B'},
-  {id:'R32_05',fase:'oitavos',casa:'1º E',fora:'2º G'},{id:'R32_06',fase:'oitavos',casa:'1º G',fora:'2º E'},
-  {id:'R32_07',fase:'oitavos',casa:'1º F',fora:'2º H'},{id:'R32_08',fase:'oitavos',casa:'1º H',fora:'2º F'},
-  {id:'R32_09',fase:'oitavos',casa:'1º I',fora:'2º K'},{id:'R32_10',fase:'oitavos',casa:'1º K',fora:'2º I'},
-  {id:'R32_11',fase:'oitavos',casa:'1º J',fora:'2º L'},{id:'R32_12',fase:'oitavos',casa:'1º L',fora:'2º J'},
-  {id:'R32_13',fase:'oitavos',casa:'3º (ABCD)',fora:'3º (EFGH)'},{id:'R32_14',fase:'oitavos',casa:'3º (IJKL)',fora:'3º (ABCF)'},
-  {id:'R32_15',fase:'oitavos',casa:'3º Grupo X',fora:'3º Grupo Y'},{id:'R32_16',fase:'oitavos',casa:'3º Grupo W',fora:'3º Grupo Z'},
-  {id:'R16_01',fase:'dezasseis',casa:'V R32_01',fora:'V R32_03'},{id:'R16_02',fase:'dezasseis',casa:'V R32_02',fora:'V R32_04'},
-  {id:'R16_03',fase:'dezasseis',casa:'V R32_05',fora:'V R32_07'},{id:'R16_04',fase:'dezasseis',casa:'V R32_06',fora:'V R32_08'},
-  {id:'R16_05',fase:'dezasseis',casa:'V R32_09',fora:'V R32_11'},{id:'R16_06',fase:'dezasseis',casa:'V R32_10',fora:'V R32_12'},
-  {id:'R16_07',fase:'dezasseis',casa:'V R32_13',fora:'V R32_15'},{id:'R16_08',fase:'dezasseis',casa:'V R32_14',fora:'V R32_16'},
-  {id:'QF_1',fase:'quartos',casa:'V R16_01',fora:'V R16_02'},{id:'QF_2',fase:'quartos',casa:'V R16_03',fora:'V R16_04'},
-  {id:'QF_3',fase:'quartos',casa:'V R16_05',fora:'V R16_06'},{id:'QF_4',fase:'quartos',casa:'V R16_07',fora:'V R16_08'},
-  {id:'SF_1',fase:'meias',casa:'V QF_1',fora:'V QF_2'},{id:'SF_2',fase:'meias',casa:'V QF_3',fora:'V QF_4'},
-  {id:'3RD',fase:'terceiro',casa:'P SF_1',fora:'P SF_2'},
-  {id:'FINAL',fase:'final',casa:'V SF_1',fora:'V SF_2'},
+  {id:'R32_01',fase:'oitavos',casa:'1ºA',fora:'2ºC'},{id:'R32_02',fase:'oitavos',casa:'1ºC',fora:'2ºA'},
+  {id:'R32_03',fase:'oitavos',casa:'1ºB',fora:'2ºD'},{id:'R32_04',fase:'oitavos',casa:'1ºD',fora:'2ºB'},
+  {id:'R32_05',fase:'oitavos',casa:'1ºE',fora:'2ºG'},{id:'R32_06',fase:'oitavos',casa:'1ºG',fora:'2ºE'},
+  {id:'R32_07',fase:'oitavos',casa:'1ºF',fora:'2ºH'},{id:'R32_08',fase:'oitavos',casa:'1ºH',fora:'2ºF'},
+  {id:'R32_09',fase:'oitavos',casa:'1ºI',fora:'2ºK'},{id:'R32_10',fase:'oitavos',casa:'1ºK',fora:'2ºI'},
+  {id:'R32_11',fase:'oitavos',casa:'1ºJ',fora:'2ºL'},{id:'R32_12',fase:'oitavos',casa:'1ºL',fora:'2ºJ'},
+  {id:'R32_13',fase:'oitavos',casa:'3TH_0',fora:'3TH_7'},{id:'R32_14',fase:'oitavos',casa:'3TH_1',fora:'3TH_6'},
+  {id:'R32_15',fase:'oitavos',casa:'3TH_2',fora:'3TH_5'},{id:'R32_16',fase:'oitavos',casa:'3TH_3',fora:'3TH_4'},
+  {id:'R16_01',fase:'dezasseis',casa:'VR32_01',fora:'VR32_03'},{id:'R16_02',fase:'dezasseis',casa:'VR32_02',fora:'VR32_04'},
+  {id:'R16_03',fase:'dezasseis',casa:'VR32_05',fora:'VR32_07'},{id:'R16_04',fase:'dezasseis',casa:'VR32_06',fora:'VR32_08'},
+  {id:'R16_05',fase:'dezasseis',casa:'VR32_09',fora:'VR32_11'},{id:'R16_06',fase:'dezasseis',casa:'VR32_10',fora:'VR32_12'},
+  {id:'R16_07',fase:'dezasseis',casa:'VR32_13',fora:'VR32_15'},{id:'R16_08',fase:'dezasseis',casa:'VR32_14',fora:'VR32_16'},
+  {id:'QF_1',fase:'quartos',casa:'VR16_01',fora:'VR16_02'},{id:'QF_2',fase:'quartos',casa:'VR16_03',fora:'VR16_04'},
+  {id:'QF_3',fase:'quartos',casa:'VR16_05',fora:'VR16_06'},{id:'QF_4',fase:'quartos',casa:'VR16_07',fora:'VR16_08'},
+  {id:'SF_1',fase:'meias',casa:'VQF_1',fora:'VQF_2'},{id:'SF_2',fase:'meias',casa:'VQF_3',fora:'VQF_4'},
+  {id:'3RD',fase:'terceiro',casa:'PSF_1',fora:'PSF_2'},
+  {id:'FINAL',fase:'final',casa:'VSF_1',fora:'VSF_2'},
 ];
 const TODOS_JOGOS = [...gerarJogosGrupo(), ...JOGOS_KO];
+
+// ─── BRACKET DINÂMICO ──────────────────────────────────────────
+function getGroupStandings(grupo) {
+  const teams = GRUPOS[grupo];
+  const st = {};
+  teams.forEach(t => st[t]={pts:0,gf:0,ga:0,gd:0,played:0});
+  TODOS_JOGOS.filter(j=>j.fase==='grupo'&&j.grupo===grupo).forEach(j=>{
+    const r=bolaoResultados[j.id]; if(!r) return;
+    const h=r.casa,a=r.fora;
+    st[j.casa].played++;st[j.fora].played++;
+    st[j.casa].gf+=h;st[j.casa].ga+=a;st[j.casa].gd+=h-a;
+    st[j.fora].gf+=a;st[j.fora].ga+=h;st[j.fora].gd+=a-h;
+    if(h>a){st[j.casa].pts+=3;}else if(h<a){st[j.fora].pts+=3;}else{st[j.casa].pts++;st[j.fora].pts++;}
+  });
+  return [...teams].sort((a,b)=>{
+    if(st[b].pts!==st[a].pts)return st[b].pts-st[a].pts;
+    if(st[b].gd!==st[a].gd)return st[b].gd-st[a].gd;
+    return st[b].gf-st[a].gf;
+  }).map(t=>({team:t,...st[t]}));
+}
+
+function getBest3rdTeams() {
+  return Object.keys(GRUPOS).map(g=>{
+    const s=getGroupStandings(g); return s[2]?{...s[2],grupo:g}:null;
+  }).filter(Boolean).sort((a,b)=>{
+    if(b.pts!==a.pts)return b.pts-a.pts;
+    if(b.gd!==a.gd)return b.gd-a.gd;
+    return b.gf-a.gf;
+  });
+}
+
+function resolveLabel(label) {
+  if(!label) return null;
+  if(COUNTRIES.find(c=>c.id===label)) return label;
+  // "1ºA", "2ºB" etc.
+  const gm=label.match(/^(\d)º([A-L])$/);
+  if(gm){const s=getGroupStandings(gm[2]);return s[parseInt(gm[1])-1]?.team||null;}
+  // "3TH_N" - best 3rd place ranked N
+  const tm=label.match(/^3TH_(\d+)$/);
+  if(tm){return getBest3rdTeams()[parseInt(tm[1])]?.team||null;}
+  // "VGAME_ID" - winner
+  const vm=label.match(/^V(.+)$/);
+  if(vm){
+    const id=vm[1],r=bolaoResultados[id];
+    if(!r)return null;
+    if(r.vencedor)return r.vencedor; // manual (penalties)
+    const game=TODOS_JOGOS.find(j=>j.id===id);
+    if(!game)return null;
+    if(r.casa>r.fora)return resolveLabel(game.casa);
+    if(r.fora>r.casa)return resolveLabel(game.fora);
+    return null; // draw = needs manual winner
+  }
+  // "PGAME_ID" - loser (3rd place)
+  const pm=label.match(/^P(.+)$/);
+  if(pm){
+    const id=pm[1],r=bolaoResultados[id];
+    if(!r)return null;
+    const game=TODOS_JOGOS.find(j=>j.id===id);
+    if(!game)return null;
+    const winnerLabel=r.vencedor||(r.casa>r.fora?game.casa:r.fora>r.casa?game.fora:null);
+    if(!winnerLabel)return null;
+    const winner=resolveLabel(winnerLabel);
+    const casa=resolveLabel(game.casa),fora=resolveLabel(game.fora);
+    return winner===casa?fora:casa;
+  }
+  return null;
+}
+
+function getTeamDisplay(label) {
+  const id=resolveLabel(label);
+  if(id){const c=COUNTRIES.find(x=>x.id===id);if(c)return{flag:c.flag,name:c.name,resolved:true};}
+  // Show pending label nicely
+  const gm=label.match(/^(\d)º([A-L])$/);
+  if(gm)return{flag:'🔲',name:`${gm[1]}º Grupo ${gm[2]}`,resolved:false};
+  const tm=label.match(/^3TH_(\d+)$/);
+  if(tm)return{flag:'🔲',name:`${parseInt(tm[1])+1}º melhor 3º`,resolved:false};
+  const vm=label.match(/^V(.+)$/);
+  if(vm)return{flag:'🔲',name:`Venc. ${vm[1]}`,resolved:false};
+  const pm=label.match(/^P(.+)$/);
+  if(pm)return{flag:'🔲',name:`Perd. ${pm[1]}`,resolved:false};
+  return{flag:'❓',name:label,resolved:false};
+}
 
 // ─── BOLÃO STATE ───────────────────────────────────────────────
 let bolaoPlayer = null;
@@ -822,7 +904,7 @@ function calcPontos(ph,pa,rh,ra,mult) {
 }
 function getTeamInfo(id) {
   const c = COUNTRIES.find(x=>x.id===id);
-  return c ? {flag:c.flag,name:c.name} : {flag:'',name:id};
+  return c ? {flag:c.flag,name:c.name} : {flag:'❓',name:id};
 }
 function getFaseMult(fase) { return (FASES.find(f=>f.id===fase)||{mult:1}).mult; }
 
@@ -886,7 +968,10 @@ function renderBolaoJogos() {
 }
 function jogoCardHTML(jogo) {
   const mult=getFaseMult(jogo.fase);
-  const casa=getTeamInfo(jogo.casa), fora=getTeamInfo(jogo.fora);
+  const isKO = jogo.fase!=='grupo';
+  const casa=isKO?getTeamDisplay(jogo.casa):getTeamInfo(jogo.casa);
+  const fora=isKO?getTeamDisplay(jogo.fora):getTeamInfo(jogo.fora);
+  const teamsKnown=!isKO||(casa.resolved&&fora.resolved);
   const res=bolaoResultados[jogo.id];
   const ap=bolaoPlayer?(bolaoApostas[bolaoPlayer]||{})[jogo.id]:null;
   const rh=res!=null?res.casa:null, ra=res!=null?res.fora:null;
@@ -895,23 +980,36 @@ function jogoCardHTML(jogo) {
   const ptsHTML=pts===null
     ?`<span class="jpts pend">sem resultado</span>`
     :`<span class="jpts ${pts>=5*mult?'p5':pts>=3*mult?'p3':pts>=2*mult?'p2':pts>=1?'p1':'p0'}">${pts} pts</span>`;
-  const resultHTML=res!=null
-    ?`<div class="jsrow" style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--blue)">${res.casa} — ${res.fora}</div>`
-    :adminMode?`<div class="jsrow">
+  // Penalty winner selector for KO draws
+  const isDraw = res && res.casa===res.fora && isKO;
+  const casaId = isKO?resolveLabel(jogo.casa):jogo.casa;
+  const foraId = isKO?resolveLabel(jogo.fora):jogo.fora;
+  const penHTML = isDraw&&adminMode ? `
+    <div class="jsrow" style="gap:5px">
+      <span style="font-size:.65rem;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em;text-transform:uppercase">Pen:</span>
+      <button onclick="setPenVencedor('${jogo.id}','${casaId}')" style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:${res.vencedor===casaId?'var(--blue)':'transparent'};color:${res.vencedor===casaId?'#fff':'var(--muted)'};cursor:pointer">${casa.flag}</button>
+      <button onclick="setPenVencedor('${jogo.id}','${foraId}')" style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;padding:2px 7px;border-radius:4px;border:1px solid var(--border);background:${res.vencedor===foraId?'var(--blue)':'transparent'};color:${res.vencedor===foraId?'#fff':'var(--muted)'};cursor:pointer">${fora.flag}</button>
+    </div>` : isDraw ? `<div style="font-size:.65rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em">⚽ Penáltis</div>` : '';
+
+  const resultHTML = res!=null
+    ? `<div class="jsrow" style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--blue)">${res.casa} — ${res.fora}</div>${penHTML}`
+    : adminMode&&teamsKnown ? `<div class="jsrow">
         <input class="rinp" type="number" min="0" max="30" placeholder="?" id="rh_${jogo.id}" onchange="saveResultado('${jogo.id}')">
         <span class="ssep" style="color:var(--blue)">-</span>
         <input class="rinp" type="number" min="0" max="30" placeholder="?" id="ra_${jogo.id}" onchange="saveResultado('${jogo.id}')">
-      </div>`:'';
-  return `<div class="jcard">
+      </div>` : '';
+
+  const cardStyle = !teamsKnown ? 'opacity:.55' : '';
+  return `<div class="jcard" style="${cardStyle}">
     <div class="jteam"><span class="jflag">${casa.flag}</span><span class="jname">${casa.name}</span></div>
     <div class="jmid">
       <div class="jsrow">
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="ph_${jogo.id}"
-          ${ph!==null?`value="${ph}"`:''}${!bolaoPlayer||res!=null?' disabled':''}
+          ${ph!==null?`value="${ph}"`:''}${!bolaoPlayer||res!=null||!teamsKnown?' disabled':''}
           onchange="saveAposta('${jogo.id}')">
         <span class="ssep">×</span>
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="pa_${jogo.id}"
-          ${pa!==null?`value="${pa}"`:''}${!bolaoPlayer||res!=null?' disabled':''}
+          ${pa!==null?`value="${pa}"`:''}${!bolaoPlayer||res!=null||!teamsKnown?' disabled':''}
           onchange="saveAposta('${jogo.id}')">
       </div>
       ${resultHTML}
@@ -934,9 +1032,22 @@ function saveResultado(jogoId) {
   const h=parseInt(document.getElementById(`rh_${jogoId}`)?.value);
   const a=parseInt(document.getElementById(`ra_${jogoId}`)?.value);
   if(isNaN(h)||isNaN(a)) return;
-  bolaoResultados[jogoId]={casa:h,fora:a};
-  sb.from('bolao_resultados').upsert({jogo_id:jogoId,golo_casa:h,golo_fora:a},{onConflict:'jogo_id'})
+  const prev=bolaoResultados[jogoId]||{};
+  bolaoResultados[jogoId]={...prev,casa:h,fora:a};
+  sb.from('bolao_resultados').upsert({jogo_id:jogoId,golo_casa:h,golo_fora:a,vencedor:prev.vencedor||null},{onConflict:'jogo_id'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();});
+}
+function setPenVencedor(jogoId, teamId) {
+  if(!bolaoResultados[jogoId]) return;
+  bolaoResultados[jogoId].vencedor = teamId;
+  sb.from('bolao_resultados').upsert({
+    jogo_id:jogoId,
+    golo_casa:bolaoResultados[jogoId].casa,
+    golo_fora:bolaoResultados[jogoId].fora,
+    vencedor:teamId
+  },{onConflict:'jogo_id'}).then(({error})=>{
+    if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();
+  });
 }
 function getTotalPts(player) {
   return TODOS_JOGOS.reduce((sum,j)=>{
@@ -1025,7 +1136,7 @@ async function syncBolaoFromSupabase() {
     sb.from('bolao_bonus').select('*'),
   ]);
   if(!a.error&&a.data){bolaoApostas={nuno:{},patricinha:{}};a.data.forEach(x=>{if(!bolaoApostas[x.jogador])bolaoApostas[x.jogador]={};bolaoApostas[x.jogador][x.jogo_id]={casa:x.golo_casa,fora:x.golo_fora};});}
-  if(!r.error&&r.data){bolaoResultados={};r.data.forEach(x=>{bolaoResultados[x.jogo_id]={casa:x.golo_casa,fora:x.golo_fora};});}
+  if(!r.error&&r.data){bolaoResultados={};r.data.forEach(x=>{bolaoResultados[x.jogo_id]={casa:x.golo_casa,fora:x.golo_fora,vencedor:x.vencedor||null};});}
   if(!b.error&&b.data){bolaoBonus={nuno:{},patricinha:{}};b.data.forEach(x=>{if(!bolaoBonus[x.jogador])bolaoBonus[x.jogador]={};bolaoBonus[x.jogador][x.tipo]=x.valor;});}
   renderBolaoJogos();
   if(bolaoTab==='ranking') renderBolaoRanking();
