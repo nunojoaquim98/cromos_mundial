@@ -350,6 +350,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
   <div class="header-left">
     <button class="back-btn" id="back-btn" style="display:none" onclick="goHome()">← Voltar</button>
     <div class="logo" onclick="goHome()">⚽ MUNDIAL 2026 Nuno e Patricinha </div>
+    <button class="back-btn" onclick="openBolao()" style="border-color:var(--purple);color:var(--purple)">🎲 Totobola</button>
   </div>
   <div class="header-stats">
     <div class="hstat h"><div class="hstat-n" id="g-have">0</div><div class="hstat-l">Tenho</div></div>
@@ -364,7 +365,6 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 <!-- ═══ VIEW: HOME ═══ -->
 <div class="view" id="view-home">
   <div class="controls">
-    <button class="filter-btn" onclick="openBolao()" style="background:rgba(168,85,247,.12);border-color:var(--purple);color:var(--purple)">🎲 Totobola</button>
     <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
     <button class="filter-btn" onclick="setFilter('complete',this)">✓ Completos</button>
     <button class="filter-btn" onclick="setFilter('partial',this)">◑ Incompletos</button>
