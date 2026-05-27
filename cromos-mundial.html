@@ -364,7 +364,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 <!-- ═══ VIEW: HOME ═══ -->
 <div class="view" id="view-home">
   <div class="controls">
-    <button class="filter-btn" onclick="openBolao()" style="background:rgba(168,85,247,.12);border-color:var(--purple);color:var(--purple)">🎲 Bolão</button>
+    <button class="filter-btn" onclick="openBolao()" style="background:rgba(168,85,247,.12);border-color:var(--purple);color:var(--purple)">🎲 Totobola</button>
     <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
     <button class="filter-btn" onclick="setFilter('complete',this)">✓ Completos</button>
     <button class="filter-btn" onclick="setFilter('partial',this)">◑ Incompletos</button>
@@ -389,6 +389,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <button class="bp-btn nuno" id="bp-nuno" onclick="setBolaoPlayer('nuno')">Nuno</button>
     <button class="bp-btn patri" id="bp-patri" onclick="setBolaoPlayer('patricinha')">Patricinha</button>
     <button class="back-btn" id="admin-toggle" onclick="toggleAdmin()" style="margin-left:8px">⚙️ Resultados</button>
+    <button class="back-btn" onclick="limparResultados()" style="border-color:var(--red);color:var(--red)">🗑 Limpar Resultados</button>
     <div class="bolao-tabs">
       <button class="btab active" id="bt-jogos" onclick="setBolaoTab('jogos')">Jogos</button>
       <button class="btab" id="bt-ranking" onclick="setBolaoTab('ranking')">Ranking</button>
@@ -1009,6 +1010,14 @@ function saveBonus(tipo) {
   sb.from('bolao_bonus').upsert({jogador:bolaoPlayer,tipo,valor:el.value},{onConflict:'jogador,tipo'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);});
 }
+async function limparResultados() {
+  if (!confirm('Apagar todos os resultados inseridos?')) return;
+  bolaoResultados = {};
+  const { error } = await sb.from('bolao_resultados').delete().neq('jogo_id','__none__');
+  if (error) showToast('Erro: ' + error.message, true);
+  else { showToast('Resultados apagados', false); renderBolaoJogos(); }
+}
+
 async function syncBolaoFromSupabase() {
   const [a,r,b]=await Promise.all([
     sb.from('bolao_apostas').select('*'),
