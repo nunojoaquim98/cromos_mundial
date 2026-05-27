@@ -286,6 +286,13 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bonus-pts-lbl{font-size:.68rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;margin-bottom:8px}
 .bonus-sel{width:100%;background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:7px 10px;border-radius:6px;font-family:'Barlow',sans-serif;font-size:.85rem;outline:none}
 .bonus-sel:focus{border-color:var(--gold)}
+.bonus-oficial{background:var(--surface2);border:1px solid var(--border2);border-radius:10px;padding:14px 16px;margin-bottom:18px}
+.bonus-oficial-title{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
+.bonus-oficial-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:.85rem;gap:8px}
+.bonus-oficial-row:last-child{border-bottom:none;padding-bottom:0}
+.bonus-hit{background:rgba(34,197,94,.15);color:var(--green);border:1px solid #1a4a2a;font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.bonus-miss{background:rgba(239,68,68,.1);color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
+.bonus-pend{color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:.65rem;white-space:nowrap}
 .jtime-info{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:1px}
 .jtime-info.locked{color:var(--red)}
 .jtime-info.waiting{color:var(--gold)}
@@ -1152,6 +1159,7 @@ let bolaoFase = 'grupo';
 let bolaoApostas = {nuno:{},patricinha:{}};
 let bolaoResultados = {};
 let bolaoBonus = {nuno:{},patricinha:{}};
+let bolaoOficiais = {}; // melhor marcador oficial (jogador='oficial' no Supabase)
 let adminMode = false;
 
 function calcPontos(ph,pa,rh,ra,mult) {
@@ -1346,15 +1354,68 @@ function setPenVencedor(jogoId, teamId) {
     if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();
   });
 }
+// ─── BÓNUS OFICIAL ─────────────────────────────────────────────
+function getOfficialBonus(tipo) {
+  if(tipo==='campeao'){
+    const r=bolaoResultados['FINAL']; if(!r) return null;
+    const g=TODOS_JOGOS.find(j=>j.id==='FINAL');
+    if(r.vencedor) return r.vencedor;
+    const c=resolveLabel(g.casa), f=resolveLabel(g.fora);
+    if(r.casa>r.fora&&c) return c;
+    if(r.fora>r.casa&&f) return f;
+    return null;
+  }
+  if(tipo==='vice'){
+    const cam=getOfficialBonus('campeao'); if(!cam) return null;
+    const g=TODOS_JOGOS.find(j=>j.id==='FINAL');
+    const c=resolveLabel(g.casa), f=resolveLabel(g.fora);
+    if(!c||!f) return null;
+    return cam===c?f:c;
+  }
+  if(tipo==='terceiro_bonus'){
+    const r=bolaoResultados['3RD']; if(!r) return null;
+    const g=TODOS_JOGOS.find(j=>j.id==='3RD');
+    if(r.vencedor) return r.vencedor;
+    const c=resolveLabel(g.casa), f=resolveLabel(g.fora);
+    if(r.casa>r.fora&&c) return c;
+    if(r.fora>r.casa&&f) return f;
+    return null;
+  }
+  if(tipo==='marcador') return bolaoOficiais['marcador']||null;
+  return null;
+}
+function calcBonusPts(player) {
+  return BONUS_ITEMS.reduce((sum,b)=>{
+    const oficial=getOfficialBonus(b.id);
+    const pred=(bolaoBonus[player]||{})[b.id];
+    if(!oficial||!pred) return sum;
+    const match=b.tipo==='text'
+      ?pred.trim().toLowerCase()===oficial.trim().toLowerCase()
+      :pred===oficial;
+    return sum+(match?b.pts:0);
+  },0);
+}
+function saveOficialMarcador() {
+  const val=(document.getElementById('oficial-marcador')?.value||'').trim();
+  bolaoOficiais['marcador']=val;
+  sb.from('bolao_bonus').upsert({jogador:'oficial',tipo:'marcador',valor:val},{onConflict:'jogador,tipo'})
+    .then(({error})=>{
+      if(error) showToast('Erro: '+error.message,true);
+      else { showToast('Marcador oficial guardado ✓',false); renderBolaoBonus(); renderBolaoRanking(); }
+    });
+}
+
 function getTotalPts(player) {
-  return TODOS_JOGOS.reduce((sum,j)=>{
+  const gamePts=TODOS_JOGOS.reduce((sum,j)=>{
     const res=bolaoResultados[j.id], ap=(bolaoApostas[player]||{})[j.id];
     if(!res||!ap) return sum;
     return sum+(calcPontos(ap.casa,ap.fora,res.casa,res.fora,getFaseMult(j.fase))||0);
   },0);
+  return gamePts+calcBonusPts(player);
 }
 function renderBolaoRanking() {
   const nPts=getTotalPts('nuno'), pPts=getTotalPts('patricinha');
+  const nBonus=calcBonusPts('nuno'), pBonus=calcBonusPts('patricinha');
   const jogados=TODOS_JOGOS.filter(j=>bolaoResultados[j.id]).length;
   const rows=FASES.map(f=>{
     const fj=TODOS_JOGOS.filter(j=>j.fase===f.id&&bolaoResultados[j.id]);
@@ -1362,16 +1423,28 @@ function renderBolaoRanking() {
     const calc=(pl)=>fj.reduce((s,j)=>{const a=(bolaoApostas[pl]||{})[j.id],r=bolaoResultados[j.id];return s+(a?calcPontos(a.casa,a.fora,r.casa,r.fora,f.mult)||0:0);},0);
     return {nome:f.nome,n:calc('nuno'),p:calc('patricinha'),jogos:fj.length};
   }).filter(Boolean);
+  const bonusRow=(nBonus>0||pBonus>0)
+    ?`<tr style="border-top:1px solid var(--border)"><td>🎯 Bónus</td><td>—</td><td style="color:var(--blue);font-weight:700">${nBonus}</td><td style="color:var(--purple);font-weight:700">${pBonus}</td></tr>`
+    :'';
   document.getElementById('bolao-rank').innerHTML=`
     <div class="rank-header">
-      <div class="rank-card nuno"><div class="rank-pname">Nuno</div><div class="rank-pts nuno">${nPts}</div><div class="rank-sub">pontos</div></div>
-      <div class="rank-card patri"><div class="rank-pname">Patricinha</div><div class="rank-pts patri">${pPts}</div><div class="rank-sub">pontos</div></div>
+      <div class="rank-card nuno">
+        <div class="rank-pname">Nuno</div>
+        <div class="rank-pts nuno">${nPts}</div>
+        <div class="rank-sub">pontos${nBonus>0?` · +${nBonus} bónus`:''}</div>
+      </div>
+      <div class="rank-card patri">
+        <div class="rank-pname">Patricinha</div>
+        <div class="rank-pts patri">${pPts}</div>
+        <div class="rank-sub">pontos${pBonus>0?` · +${pBonus} bónus`:''}</div>
+      </div>
     </div>
     <div style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">${jogados} jogo${jogados!==1?'s':''} com resultado inserido</div>
     ${rows.length?`<table class="rank-table">
       <thead><tr><th>Fase</th><th>Jogos</th><th style="color:var(--blue)">Nuno</th><th style="color:var(--purple)">Patricinha</th></tr></thead>
       <tbody>
         ${rows.map(r=>`<tr><td>${r.nome}</td><td>${r.jogos}</td><td style="color:var(--blue);font-weight:700">${r.n}</td><td style="color:var(--purple);font-weight:700">${r.p}</td></tr>`).join('')}
+        ${bonusRow}
         <tr style="border-top:2px solid var(--border2)"><td><strong>Total</strong></td><td>${jogados}</td>
           <td style="color:var(--blue);font-family:'Bebas Neue',sans-serif;font-size:1.2rem">${nPts}</td>
           <td style="color:var(--purple);font-family:'Bebas Neue',sans-serif;font-size:1.2rem">${pPts}</td></tr>
@@ -1380,33 +1453,98 @@ function renderBolaoRanking() {
 function renderBolaoBonus() {
   const player=bolaoPlayer, myB=player?(bolaoBonus[player]||{}):{};
   const teamOpts=COUNTRIES.map(c=>`<option value="${c.id}">${c.flag} ${c.name}</option>`).join('');
-  document.getElementById('bolao-bonus-content').innerHTML=`
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px">
-      ${player?`A editar: <strong style="color:${player==='nuno'?'var(--blue)':'var(--purple)'}">${player==='nuno'?'Nuno':'Patricinha'}</strong>`:'Seleciona um jogador em cima'}
-    </div>
-    <div class="bonus-grid">
-      ${BONUS_ITEMS.map(b=>`<div class="bonus-card">
-        <div class="bonus-lbl">${b.nome}</div>
-        <div class="bonus-pts-lbl">+${b.pts} pontos</div>
-        ${b.tipo==='team'
-          ?`<select class="bonus-sel" id="bns_${b.id}" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">
-              <option value="">— Escolher —</option>${teamOpts}</select>`
-          :`<input class="bonus-sel" type="text" id="bns_${b.id}" placeholder="Nome do jogador" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">`
-        }</div>`).join('')}
-    </div>
-    <div style="margin-top:8px">
-      ${BONUS_ITEMS.map(b=>{
-        const nv=bolaoBonus.nuno?.[b.id]||'—', pv=bolaoBonus.patricinha?.[b.id]||'—';
-        const nName=b.tipo==='team'?((COUNTRIES.find(c=>c.id===nv)||{}).flag||'')+' '+((COUNTRIES.find(c=>c.id===nv)||{}).name||nv):nv;
-        const pName=b.tipo==='team'?((COUNTRIES.find(c=>c.id===pv)||{}).flag||'')+' '+((COUNTRIES.find(c=>c.id===pv)||{}).name||pv):pv;
-        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:.82rem">
+
+  function teamLabel(id) {
+    if(!id||id==='—') return '—';
+    const c=COUNTRIES.find(x=>x.id===id);
+    return c?`${c.flag} ${c.name}`:id;
+  }
+  function badgeHTML(tipo, pred) {
+    const oficial=getOfficialBonus(tipo);
+    const b=BONUS_ITEMS.find(x=>x.id===tipo);
+    if(!oficial) return `<span class="bonus-pend">a aguardar</span>`;
+    if(!pred) return `<span class="bonus-pend">sem aposta</span>`;
+    const hit=b.tipo==='text'
+      ?pred.trim().toLowerCase()===oficial.trim().toLowerCase()
+      :pred===oficial;
+    return hit
+      ?`<span class="bonus-hit">+${b.pts} pts ✓</span>`
+      :`<span class="bonus-miss">0 pts ✗</span>`;
+  }
+
+  // Admin panel: official results
+  const oficialPanel = adminMode ? `
+    <div class="bonus-oficial">
+      <div class="bonus-oficial-title">⚙️ Resultados Oficiais (admin)</div>
+      ${['campeao','vice','terceiro_bonus'].map(tipo=>{
+        const b=BONUS_ITEMS.find(x=>x.id===tipo);
+        const val=getOfficialBonus(tipo);
+        return `<div class="bonus-oficial-row">
           <span style="color:var(--muted)">${b.nome}</span>
-          <div style="display:flex;gap:20px">
-            <span style="color:var(--blue)">Nuno: ${nName}</span>
-            <span style="color:var(--purple)">Patri: ${pName}</span>
-          </div></div>`;
+          <span style="color:var(--text)">${val?teamLabel(val):'<span style="color:var(--muted);font-size:.75rem">automático após final</span>'}</span>
+        </div>`;
+      }).join('')}
+      <div class="bonus-oficial-row" style="margin-top:4px;flex-wrap:wrap;gap:8px">
+        <span style="color:var(--muted)">${BONUS_ITEMS.find(x=>x.id==='marcador').nome}</span>
+        <div style="display:flex;gap:6px;align-items:center;flex:1;min-width:150px">
+          <input id="oficial-marcador" class="bonus-sel" type="text" placeholder="Nome do marcador"
+            style="flex:1" value="${bolaoOficiais['marcador']||''}">
+          <button onclick="saveOficialMarcador()"
+            style="font-family:'Barlow Condensed',sans-serif;font-size:.75rem;padding:7px 12px;background:var(--blue);color:#fff;border:none;border-radius:6px;cursor:pointer;white-space:nowrap">
+            Guardar
+          </button>
+        </div>
+      </div>
+    </div>` : '';
+
+  // Comparison table
+  const compTable=`
+    <div style="margin-top:20px;border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="padding:10px 14px;background:var(--surface2);font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)">
+        Comparação de Apostas
+      </div>
+      ${BONUS_ITEMS.map(b=>{
+        const nv=bolaoBonus.nuno?.[b.id]||'', pv=bolaoBonus.patricinha?.[b.id]||'';
+        const nLabel=b.tipo==='team'?teamLabel(nv)||(nv||'—'):(nv||'—');
+        const pLabel=b.tipo==='team'?teamLabel(pv)||(pv||'—'):(pv||'—');
+        return `<div style="padding:10px 14px;border-bottom:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:.8rem">
+          <span style="color:var(--muted);font-size:.72rem">${b.nome}</span>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="color:var(--blue);font-size:.75rem">Nuno: ${nLabel||'—'}</span>
+            ${badgeHTML(b.id, nv)}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:2px">
+            <span style="color:var(--purple);font-size:.75rem">Patri: ${pLabel||'—'}</span>
+            ${badgeHTML(b.id, pv)}
+          </div>
+        </div>`;
       }).join('')}
     </div>`;
+
+  document.getElementById('bolao-bonus-content').innerHTML=`
+    ${oficialPanel}
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">
+      ${player?`A editar: <strong style="color:${player==='nuno'?'var(--blue)':'var(--purple)'}">${player==='nuno'?'Nuno':'Patricinha'}</strong>`:'Seleciona um jogador em cima para fazer apostas'}
+    </div>
+    <div class="bonus-grid">
+      ${BONUS_ITEMS.map(b=>{
+        const oficial=getOfficialBonus(b.id);
+        const pred=(bolaoBonus[player]||{})[b.id];
+        const badge=player?badgeHTML(b.id,pred):'';
+        return `<div class="bonus-card">
+          <div class="bonus-lbl">${b.nome}</div>
+          <div class="bonus-pts-lbl">+${b.pts} pontos</div>
+          ${b.tipo==='team'
+            ?`<select class="bonus-sel" id="bns_${b.id}" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">
+                <option value="">— Escolher —</option>${teamOpts}</select>`
+            :`<input class="bonus-sel" type="text" id="bns_${b.id}" placeholder="Nome do jogador" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">`
+          }
+          ${badge?`<div style="margin-top:6px">${badge}</div>`:''}
+        </div>`;
+      }).join('')}
+    </div>
+    ${compTable}`;
+
   if(player) BONUS_ITEMS.forEach(b=>{const el=document.getElementById(`bns_${b.id}`);if(el&&myB[b.id])el.value=myB[b.id];});
 }
 function saveBonus(tipo) {
@@ -1434,7 +1572,13 @@ async function syncBolaoFromSupabase() {
   ]);
   if(!a.error&&a.data){bolaoApostas={nuno:{},patricinha:{}};a.data.forEach(x=>{if(!bolaoApostas[x.jogador])bolaoApostas[x.jogador]={};bolaoApostas[x.jogador][x.jogo_id]={casa:x.golo_casa,fora:x.golo_fora};});}
   if(!r.error&&r.data){bolaoResultados={};r.data.forEach(x=>{bolaoResultados[x.jogo_id]={casa:x.golo_casa,fora:x.golo_fora,vencedor:x.vencedor||null};});}
-  if(!b.error&&b.data){bolaoBonus={nuno:{},patricinha:{}};b.data.forEach(x=>{if(!bolaoBonus[x.jogador])bolaoBonus[x.jogador]={};bolaoBonus[x.jogador][x.tipo]=x.valor;});}
+  if(!b.error&&b.data){
+    bolaoBonus={nuno:{},patricinha:{}}; bolaoOficiais={};
+    b.data.forEach(x=>{
+      if(x.jogador==='oficial') { bolaoOficiais[x.tipo]=x.valor; }
+      else { if(!bolaoBonus[x.jogador])bolaoBonus[x.jogador]={}; bolaoBonus[x.jogador][x.tipo]=x.valor; }
+    });
+  }
   renderBolaoJogos();
   if(bolaoTab==='ranking') renderBolaoRanking();
   if(bolaoTab==='bonus') renderBolaoBonus();
