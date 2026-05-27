@@ -64,6 +64,7 @@ header {
 .hstat.h .hstat-n { color: var(--green); }
 .hstat.m .hstat-n { color: var(--red); }
 .hstat.r .hstat-n { color: var(--gold); }
+.hstat.p .hstat-n { color: var(--blue); }
 
 /* ─── PROGRESS ─── */
 .prog-bar-wrap { height: 4px; background: var(--surface2); }
@@ -297,6 +298,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <div class="hstat h"><div class="hstat-n" id="g-have">0</div><div class="hstat-l">Tenho</div></div>
     <div class="hstat m"><div class="hstat-n" id="g-miss">0</div><div class="hstat-l">Faltam</div></div>
     <div class="hstat r"><div class="hstat-n" id="g-rep">0</div><div class="hstat-l">Repetidos</div></div>
+    <div class="hstat p"><div class="hstat-n" id="g-pct">0%</div><div class="hstat-l">Completo</div></div>
   </div>
   <button class="back-btn" onclick="doLogout()" style="margin-left:8px">↩ Sair</button>
 </header>
@@ -509,6 +511,7 @@ function updateGlobalStats() {
   document.getElementById('g-miss').textContent = missing;
   document.getElementById('g-rep').textContent = repeats;
   const pct = total ? Math.round((have / total) * 100) : 0;
+  document.getElementById('g-pct').textContent = pct + '%';
   document.getElementById('g-prog').style.width = pct + '%';
 }
 
