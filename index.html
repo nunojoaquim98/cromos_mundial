@@ -285,7 +285,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bonus-sel:focus{border-color:var(--gold)}
 
 /* ─── LANDING ─── */
-.landing-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:32px;background:radial-gradient(ellipse at 50% 0%,#0d1f3c 0%,var(--bg) 65%)}
+.landing-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:32px;background:radial-gradient(ellipse at 50% 0%,#0d1f3c 0%,var(--bg) 65%);position:relative}
 .landing-logo{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:.12em;color:var(--gold);text-align:center;line-height:1}
 .landing-sub{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin-top:4px;text-align:center}
 .landing-cards{display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
@@ -338,13 +338,56 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
   .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
   .sticker-grid { grid-template-columns: repeat(auto-fill, minmax(95px, 1fr)); gap: 7px; }
 }
+
+/* ─── LIGHT MODE ─── */
+body.light {
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface2: #e4ecf5;
+  --surface3: #d5e2ef;
+  --border: #bfcfe0;
+  --border2: #a8bdd4;
+  --gold: #b07a00;
+  --gold-dim: #fdf3cc;
+  --green: #16a34a;
+  --green-dim: #dcfce7;
+  --red: #dc2626;
+  --blue: #2563eb;
+  --purple: #7c3aed;
+  --text: #18243a;
+  --text2: #3d5470;
+  --muted: #7a90a8;
+}
+body.light header {
+  background: rgba(240,244,248,0.97);
+  border-bottom-color: var(--border);
+}
+body.light .login-wrap,
+body.light .landing-wrap {
+  background: radial-gradient(ellipse at 50% 0%, #d0e4f5 0%, var(--bg) 65%);
+}
+body.light .sticker.s-have { background: #e8faf0; border-color: #86efac; }
+body.light .sticker.s-repeat { background: #fefce8; border-color: #fde047; }
+body.light .bolao-content, body.light .rank-wrap, body.light .bonus-wrap { background: transparent; }
+body.light .jpts.p0 { background: #f1f5f9; }
+
+/* ─── THEME TOGGLE BUTTON ─── */
+.theme-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 1px solid var(--border); background: var(--surface2);
+  color: var(--text2); cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.theme-btn:hover { border-color: var(--gold); color: var(--gold); }
 </style>
 </head>
 <body>
 
 <!-- ═══ VIEW: LOGIN ═══ -->
 <div class="view active" id="view-login">
-  <div class="login-wrap">
+  <div class="login-wrap" style="position:relative">
+    <button class="theme-btn" onclick="toggleTheme()" title="Mudar tema" style="position:absolute;top:16px;right:16px">🌙</button>
     <div class="login-card">
       <div class="login-logo">⚽ MUNDIAL 2026</div>
       <div class="login-sub">Nuno e Patricinha</div>
@@ -363,6 +406,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 <!-- ═══ VIEW: LANDING ═══ -->
 <div class="view" id="view-landing">
   <div class="landing-wrap">
+    <button class="theme-btn" onclick="toggleTheme()" title="Mudar tema" style="position:absolute;top:16px;right:16px">🌙</button>
     <div>
       <div class="landing-logo">⚽ MUNDIAL 2026</div>
       <div class="landing-sub">Nuno e Patricinha</div>
@@ -389,13 +433,14 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     <div class="logo" onclick="goHome()">⚽ MUNDIAL 2026 Nuno e Patricinha </div>
     <button class="back-btn" onclick="openBolao()" style="border-color:var(--purple);color:var(--purple)">🎲 Totobola</button>
   </div>
-  <div class="header-stats">
+  <div class="header-stats" id="header-stats">
     <div class="hstat h"><div class="hstat-n" id="g-have">0</div><div class="hstat-l">Tenho</div></div>
     <div class="hstat m"><div class="hstat-n" id="g-miss">0</div><div class="hstat-l">Faltam</div></div>
     <div class="hstat r"><div class="hstat-n" id="g-rep">0</div><div class="hstat-l">Repetidos</div></div>
     <div class="hstat p"><div class="hstat-n" id="g-pct">0%</div><div class="hstat-l">Completo</div></div>
   </div>
-  <button class="back-btn" onclick="doLogout()" style="margin-left:8px">↩ Sair</button>
+  <button class="theme-btn" id="theme-btn" onclick="toggleTheme()" title="Mudar tema">🌙</button>
+  <button class="back-btn" onclick="doLogout()" style="margin-left:4px">↩ Sair</button>
 </header>
 <div class="prog-bar-wrap" id="app-progbar" style="display:none"><div class="prog-bar-fill" id="g-prog" style="width:0%"></div></div>
 
@@ -964,8 +1009,11 @@ function getFaseMult(fase) { return (FASES.find(f=>f.id===fase)||{mult:1}).mult;
 
 function openBolao() {
   document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-detail').classList.remove('active');
   document.getElementById('back-btn').style.display='flex';
   document.getElementById('view-bolao').classList.add('active');
+  document.getElementById('header-stats').style.display = 'none';
+  document.getElementById('app-progbar').style.display = 'none';
   syncBolaoFromSupabase();
   renderBolaoFaseBar();
   renderBolaoJogos();
@@ -1212,6 +1260,7 @@ function openCromos() {
   document.getElementById('app-header').style.display = 'flex';
   document.getElementById('app-progbar').style.display = 'block';
   document.getElementById('back-btn').style.display = 'flex';
+  document.getElementById('header-stats').style.display = 'flex';
   renderHome();
 }
 function openBolaoFromLanding() {
@@ -1219,6 +1268,7 @@ function openBolaoFromLanding() {
   document.getElementById('app-header').style.display = 'flex';
   document.getElementById('app-progbar').style.display = 'none';
   document.getElementById('back-btn').style.display = 'flex';
+  document.getElementById('header-stats').style.display = 'none';
   openBolao();
 }
 
@@ -1254,7 +1304,25 @@ function doLogin() {
   }
 }
 
+// ─── THEME ─────────────────────────────────────────────────────
+function updateThemeBtns(isLight) {
+  document.querySelectorAll('.theme-btn').forEach(b => b.textContent = isLight ? '☀️' : '🌙');
+}
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light');
+  localStorage.setItem('mundial_theme', isLight ? 'light' : 'dark');
+  updateThemeBtns(isLight);
+}
+function initTheme() {
+  const saved = localStorage.getItem('mundial_theme');
+  if (saved === 'light') {
+    document.body.classList.add('light');
+    updateThemeBtns(true);
+  }
+}
+
 // ─── INIT ──────────────────────────────────────────────────────
+initTheme();
 if (localStorage.getItem('mundial_auth') === '1') {
   showApp();
 }
