@@ -1259,7 +1259,12 @@ function renderBolaoJogos() {
     const groups = {};
     jogos.forEach(j=>{if(!groups[j.grupo])groups[j.grupo]=[];groups[j.grupo].push(j);});
     c.innerHTML = Object.entries(groups).map(([g,gj])=>
-      `<div class="grupo-lbl">Grupo ${g}</div>`+gj.map(j=>jogoCardHTML(j)).join('')
+      `<div class="grupo-lbl">Grupo ${g}
+        ${bolaoPlayer?`<button onclick="apagarGrupo('${g}')"
+          style="font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:600;letter-spacing:.06em;
+          text-transform:uppercase;padding:2px 9px;border:1px solid var(--red);background:transparent;
+          color:var(--red);border-radius:4px;cursor:pointer;opacity:.75">✕ Apagar</button>`:''}
+      </div>`+gj.map(j=>jogoCardHTML(j)).join('')
     ).join('');
   } else {
     c.innerHTML = jogos.map(j=>jogoCardHTML(j)).join('')||'<div class="empty">Sem jogos nesta fase</div>';
@@ -1558,6 +1563,16 @@ function saveBonus(tipo) {
   bolaoBonus[bolaoPlayer][tipo]=el.value;
   sb.from('bolao_bonus').upsert({jogador:bolaoPlayer,tipo,valor:el.value},{onConflict:'jogador,tipo'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);});
+}
+async function apagarGrupo(grupo) {
+  if(!bolaoPlayer) return;
+  if(!confirm(`Apagar todos os prognósticos do Grupo ${grupo} para ${bolaoPlayer==='nuno'?'Nuno':'Patricinha'}?`)) return;
+  const ids = TODOS_JOGOS.filter(j=>j.fase==='grupo'&&j.grupo===grupo).map(j=>j.id);
+  if(!bolaoApostas[bolaoPlayer]) bolaoApostas[bolaoPlayer]={};
+  ids.forEach(id=>delete bolaoApostas[bolaoPlayer][id]);
+  const {error} = await sb.from('bolao_apostas').delete().eq('jogador',bolaoPlayer).in('jogo_id',ids);
+  if(error) showToast('Erro: '+error.message,true);
+  else { showToast(`Grupo ${grupo} apagado ✓`,false); renderBolaoJogos(); }
 }
 async function limparResultados() {
   if (!confirm('Apagar todos os resultados inseridos?')) return;
