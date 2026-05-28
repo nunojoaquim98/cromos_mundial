@@ -1681,40 +1681,37 @@ function renderBolaoBonus() {
       }).join('')}
     </div>`;
 
-  // Marcador input — shown per player (only the text prediction remains)
+  // Marcador input — only for the selected player
   const marcadorB = BONUS_ITEMS.find(x=>x.id==='marcador');
-  const marcadorSection = !adminMode ? `
-    <div class="bonus-card" style="margin-bottom:16px">
-      <div class="bonus-lbl">${marcadorB.nome}</div>
-      <div class="bonus-pts-lbl">+${marcadorB.pts} pontos se acertares</div>
-      <div style="display:flex;flex-direction:column;gap:10px">
-        ${['nuno','patricinha'].map(pl=>{
-          const pred=(bolaoBonus[pl]||{})['marcador']||'';
-          const badge=badgeHTML('marcador',pred);
-          return `<div>
-            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
-              color:${pl==='nuno'?'var(--blue)':'var(--purple)'};margin-bottom:4px">${pl==='nuno'?'Nuno':'Patricinha'}</div>
-            <div style="display:flex;gap:6px;align-items:center">
-              <input class="bonus-sel" type="text" id="bns_marcador_${pl}" placeholder="Nome do marcador"
-                value="${pred}" style="flex:1" onchange="saveBonusFor('marcador','${pl}')">
-              <div>${badge}</div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-    </div>` : '';
+  let marcadorSection = '';
+  if(!adminMode) {
+    if(player) {
+      const pred=(bolaoBonus[player]||{})['marcador']||'';
+      const badge=badgeHTML('marcador',pred);
+      const playerColor=player==='nuno'?'var(--blue)':'var(--purple)';
+      marcadorSection=`
+        <div class="bonus-card" style="margin-bottom:16px">
+          <div class="bonus-lbl">${marcadorB.nome}</div>
+          <div class="bonus-pts-lbl">+${marcadorB.pts} pontos se acertares</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+            <input class="bonus-sel" type="text" id="bns_marcador_${player}" placeholder="Nome do marcador"
+              value="${pred}" style="flex:1;border-color:${playerColor}" onchange="saveBonusFor('marcador','${player}')">
+            <div>${badge}</div>
+          </div>
+        </div>`;
+    } else {
+      marcadorSection=`
+        <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:var(--muted);
+          text-align:center;padding:20px 0 8px;letter-spacing:.08em">
+          Seleciona Nuno ou Patricinha para inserir a previsão do marcador
+        </div>`;
+    }
+  }
 
   document.getElementById('bolao-bonus-content').innerHTML=`
     ${oficialPanel}
     ${marcadorSection}
     ${compTable}`;
-
-  if(!adminMode) {
-    ['nuno','patricinha'].forEach(pl=>{
-      const el=document.getElementById(`bns_marcador_${pl}`);
-      if(el&&bolaoBonus[pl]?.marcador) el.value=bolaoBonus[pl].marcador;
-    });
-  }
 }
 function saveBonus(tipo) {
   if(!bolaoPlayer) return;
