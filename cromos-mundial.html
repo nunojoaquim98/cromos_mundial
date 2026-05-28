@@ -1500,8 +1500,9 @@ function saveResultado(jogoId) {
   if(isNaN(h)||isNaN(a)) return;
   const prev=bolaoResultados[jogoId]||{};
   bolaoResultados[jogoId]={...prev,casa:h,fora:a};
+  renderSidebar(); // optimistic — update sidebar instantly
   sb.from('bolao_resultados').upsert({jogo_id:jogoId,golo_casa:h,golo_fora:a,vencedor:prev.vencedor||null},{onConflict:'jogo_id'})
-    .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else{renderBolaoJogos();renderSidebar();}});
+    .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();});
 }
 function setPenVencedor(jogoId, teamId) {
   if(!bolaoResultados[jogoId]) return;
