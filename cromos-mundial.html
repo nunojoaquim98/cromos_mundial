@@ -482,7 +482,6 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
   .bolao-bar-top { gap: 6px; }
   .bolao-player-lbl { display: none; }
   .bp-btn { padding: 7px 0; flex: 1; font-size: 0.82rem; text-align: center; }
-  .back-btn#admin-toggle { margin-left: 0; }
   .bolao-tabs { gap: 6px; }
   .btab { padding: 8px 6px; font-size: 0.75rem; }
 
@@ -648,8 +647,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
       <span class="bolao-player-lbl">Jogador:</span>
       <button class="bp-btn nuno" id="bp-nuno" onclick="setBolaoPlayer('nuno')">Nuno</button>
       <button class="bp-btn patri" id="bp-patri" onclick="setBolaoPlayer('patricinha')">Patricinha</button>
-      <button class="back-btn" id="admin-toggle" onclick="toggleAdmin()">⚙️ <span class="btn-lbl">Resultados</span></button>
-      <button class="back-btn btn-danger" onclick="limparResultados()">🗑 <span class="btn-lbl">Limpar</span></button>
+      <div id="admin-area"></div>
     </div>
     <div class="bolao-tabs">
       <button class="btab active" id="bt-jogos" onclick="setBolaoTab('jogos')">Jogos</button>
@@ -1291,6 +1289,7 @@ function openBolao() {
   document.getElementById('view-bolao').classList.add('active');
   document.getElementById('header-stats').style.display = 'none';
   document.getElementById('app-progbar').style.display = 'none';
+  renderAdminArea();
   syncBolaoFromSupabase();
   renderBolaoFaseBar();
   renderBolaoJogos();
@@ -1361,14 +1360,6 @@ function renderBolaoRegras() {
 function setBolaoFase(fase) {
   bolaoFase = fase;
   document.querySelectorAll('.bfase-btn').forEach(b=>b.classList.toggle('active',b.dataset.fase===fase));
-  renderBolaoJogos();
-}
-function toggleAdmin() {
-  adminMode = !adminMode;
-  const btn = document.getElementById('admin-toggle');
-  btn.innerHTML = adminMode ? '🔐 <span class="btn-lbl">Fechar</span>' : '⚙️ <span class="btn-lbl">Resultados</span>';
-  btn.style.borderColor = adminMode ? 'var(--blue)' : '';
-  btn.style.color = adminMode ? 'var(--blue)' : '';
   renderBolaoJogos();
 }
 function renderBolaoFaseBar() {
@@ -1452,8 +1443,13 @@ function jogoCardHTML(jogo, showGrpBadge=false) {
     </div>` : isDraw ? `<div style="font-size:.65rem;color:var(--gold);font-family:'Barlow Condensed',sans-serif;letter-spacing:.06em">⚽ Penáltis</div>` : '';
 
   // Result area: admin can always enter/edit result after lock; non-admin just sees "a aguardar"
+  const clearBtn = res!=null&&adminMode
+    ? `<button onclick="clearResultado('${jogo.id}')" title="Apagar resultado"
+        style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.75rem;
+          padding:1px 4px;line-height:1;opacity:.6;transition:opacity .15s" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity='.6'">✕</button>`
+    : '';
   const resultHTML = res!=null
-    ? `<div class="jsrow" style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--blue)">${res.casa} — ${res.fora}</div>${penHTML}`
+    ? `<div class="jsrow" style="font-family:'Bebas Neue',sans-serif;font-size:.85rem;color:var(--blue);gap:6px">${res.casa} — ${res.fora}${clearBtn}</div>${penHTML}`
     : adminMode&&teamsKnown ? `<div class="jsrow">
         <input class="rinp" type="number" min="0" max="30" placeholder="?" id="rh_${jogo.id}" onchange="saveResultado('${jogo.id}')">
         <span class="ssep" style="color:var(--blue)">-</span>
@@ -1720,11 +1716,21 @@ function saveBonus(tipo) {
 }
 
 async function limparResultados() {
+  if(!adminMode) return;
   if (!confirm('Apagar todos os resultados inseridos?')) return;
   bolaoResultados = {};
   const { error } = await sb.from('bolao_resultados').delete().neq('jogo_id','__none__');
   if (error) showToast('Erro: ' + error.message, true);
   else { showToast('Resultados apagados', false); renderBolaoJogos(); renderSidebar(); }
+}
+async function clearResultado(jogoId) {
+  if(!adminMode) return;
+  delete bolaoResultados[jogoId];
+  renderBolaoJogos();
+  renderSidebar();
+  const { error } = await sb.from('bolao_resultados').delete().eq('jogo_id', jogoId);
+  if(error) showToast('Erro: ' + error.message, true);
+  else showToast('Resultado apagado ✓', false);
 }
 
 /* ── Sidebar ── */
@@ -1911,11 +1917,95 @@ function initTheme() {
   }
 }
 
-// ─── INIT ──────────────────────────────────────────────────────
+// ─── ADMIN LOGIN ───────────────────────────────────────────────
+const ADMIN_PASSWORD = 'mundial2026';
+
+function renderAdminArea() {
+  const el = document.getElementById('admin-area');
+  if(!el) return;
+  if(adminMode) {
+    el.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.1em;
+          text-transform:uppercase;color:var(--blue);border:1px solid var(--blue);
+          border-radius:4px;padding:3px 8px">🔐 Admin</span>
+        <button class="back-btn btn-danger" onclick="limparResultados()" title="Apagar todos os resultados">🗑</button>
+        <button class="back-btn" onclick="adminLogout()" style="border-color:var(--muted);color:var(--muted)" title="Sair do modo admin">↩</button>
+      </div>`;
+  } else {
+    el.innerHTML = `<button class="back-btn" onclick="openAdminLogin()"
+      style="border-color:var(--muted);color:var(--muted);opacity:.6;font-size:.7rem;padding:5px 10px"
+      title="Login admin">🔐</button>`;
+  }
+}
+
+function openAdminLogin() {
+  document.getElementById('admin-modal').style.display = 'flex';
+  setTimeout(()=>document.getElementById('admin-pwd-input')?.focus(), 50);
+}
+function closeAdminLogin() {
+  document.getElementById('admin-modal').style.display = 'none';
+  document.getElementById('admin-pwd-input').value = '';
+  document.getElementById('admin-login-err').style.display = 'none';
+}
+function submitAdminLogin() {
+  const val = document.getElementById('admin-pwd-input').value;
+  if(val === ADMIN_PASSWORD) {
+    adminMode = true;
+    localStorage.setItem('mundial_admin', '1');
+    closeAdminLogin();
+    renderAdminArea();
+    renderBolaoJogos();
+    if(bolaoTab==='bonus') renderBolaoBonus();
+  } else {
+    const err = document.getElementById('admin-login-err');
+    err.style.display = 'block';
+    document.getElementById('admin-pwd-input').value = '';
+    document.getElementById('admin-pwd-input').focus();
+  }
+}
+function adminLogout() {
+  adminMode = false;
+  localStorage.removeItem('mundial_admin');
+  renderAdminArea();
+  renderBolaoJogos();
+  if(bolaoTab==='bonus') renderBolaoBonus();
+}
+
+// ─── INIT ───────────────────────────────────────────────────────
 initTheme();
 if (localStorage.getItem('mundial_auth') === '1') {
   showApp();
 }
+// Restore admin session
+if (localStorage.getItem('mundial_admin') === '1') {
+  adminMode = true;
+}
 </script>
+
+<!-- ═══ ADMIN LOGIN MODAL ═══ -->
+<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:28px 28px 24px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.4)">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:.18em;color:var(--blue);margin-bottom:6px">🔐 Login Admin</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:var(--muted);margin-bottom:18px">Insere a password para aceder às funções de administrador.</div>
+    <input id="admin-pwd-input" type="password" placeholder="Password"
+      style="width:100%;box-sizing:border-box;background:var(--surface2);border:1px solid var(--border2);color:var(--text);
+        padding:10px 12px;border-radius:8px;font-family:'Barlow',sans-serif;font-size:.95rem;outline:none;margin-bottom:8px"
+      onkeydown="if(event.key==='Enter')submitAdminLogin()">
+    <div id="admin-login-err" style="display:none;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--red);margin-bottom:10px">Password incorrecta.</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="submitAdminLogin()"
+        style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+          padding:10px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer">
+        Entrar
+      </button>
+      <button onclick="closeAdminLogin()"
+        style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;padding:10px 16px;background:transparent;
+          color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
