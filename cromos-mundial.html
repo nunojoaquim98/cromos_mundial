@@ -1461,10 +1461,7 @@ function jogoCardHTML(jogo, showGrpBadge=false) {
   const betDisabled = !bolaoPlayer||res!=null||!teamsKnown||locked;
   const cardCls = 'jcard' + (!teamsKnown?' ':'') + (locked?' jlocked':'');
   const cardStyle = !teamsKnown ? 'opacity:.55' : '';
-  return `<div class="${cardCls}" id="jcard-${jogo.id}" style="${cardStyle}">
-    <div class="jteam"><span class="jflag">${casa.flag}</span><span class="jname">${casa.name}</span></div>
-    <div class="jmid">
-      ${timeHTML}
+  const betRow = adminMode ? '' : `
       <div class="jsrow">
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="ph_${jogo.id}"
           ${ph!==null?`value="${ph}"`:''}${betDisabled?' disabled':''}
@@ -1473,9 +1470,14 @@ function jogoCardHTML(jogo, showGrpBadge=false) {
         <input class="sinp" type="number" min="0" max="30" placeholder="-" id="pa_${jogo.id}"
           ${pa!==null?`value="${pa}"`:''}${betDisabled?' disabled':''}
           onchange="saveAposta('${jogo.id}')">
-      </div>
+      </div>`;
+  return `<div class="${cardCls}" id="jcard-${jogo.id}" style="${cardStyle}">
+    <div class="jteam"><span class="jflag">${casa.flag}</span><span class="jname">${casa.name}</span></div>
+    <div class="jmid">
+      ${timeHTML}
+      ${betRow}
       ${resultHTML}
-      ${ptsHTML}
+      ${adminMode ? '' : ptsHTML}
     </div>
     <div class="jteam r"><span class="jflag">${fora.flag}</span><span class="jname r">${fora.name}</span></div>
   </div>`;
@@ -1923,6 +1925,12 @@ const ADMIN_PASSWORD = 'mundial2026';
 function renderAdminArea() {
   const el = document.getElementById('admin-area');
   if(!el) return;
+  // Show/hide player buttons
+  ['bolao-player-lbl','bp-nuno','bp-patri'].forEach(id=>{
+    const node = document.getElementById(id) || document.querySelector('.'+id);
+    if(node) node.style.display = adminMode ? 'none' : '';
+  });
+  document.querySelector('.bolao-player-lbl') && (document.querySelector('.bolao-player-lbl').style.display = adminMode ? 'none' : '');
   if(adminMode) {
     el.innerHTML = `
       <div style="display:flex;align-items:center;gap:6px">
