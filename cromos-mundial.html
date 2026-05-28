@@ -417,8 +417,6 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
     font-size: 0.95rem; letter-spacing: 0.06em;
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;
   }
-  /* Hide Totobola shortcut from header on mobile — use landing instead */
-  .header-left .back-btn:not(#back-btn) { display: none; }
   .back-btn { padding: 5px 8px; font-size: 0.7rem; gap: 3px; }
   .theme-btn { width: 30px; height: 30px; font-size: 0.9rem; }
   .header-stats { gap: 10px; }
@@ -607,7 +605,6 @@ body.light .jpts.p0 { background: #f1f5f9; }
   <div class="header-left">
     <button class="back-btn" id="back-btn" style="display:none" onclick="goHome()">← Voltar</button>
     <div class="logo" onclick="goHome()">⚽ MUNDIAL 2026 Nuno e Patricinha </div>
-    <button class="back-btn" onclick="openBolao()" style="border-color:var(--purple);color:var(--purple)">🎲 Totobola</button>
   </div>
   <div class="header-stats" id="header-stats">
     <div class="hstat h"><div class="hstat-n" id="g-have">0</div><div class="hstat-l">Tenho</div></div>
