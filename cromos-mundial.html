@@ -246,6 +246,10 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bfase-btn.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .bolao-content{padding:20px 24px;max-width:860px;margin:0 auto}
 .grupo-lbl{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.md-lbl{display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;transition:color .15s}
+.md-lbl:hover{color:var(--text)}
+.md-arrow{font-size:1.1rem;line-height:1;transition:transform .2s ease;display:inline-block}
+.md-arrow.up{transform:rotate(-180deg)}
 .jcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .jteam{display:flex;align-items:center;gap:6px}
 .jteam.r{flex-direction:row-reverse}
@@ -1234,6 +1238,7 @@ function getTeamDisplay(label) {
 let bolaoPlayer = null;
 let bolaoTab = 'jogos';
 let bolaoFase = 'grupo';
+const collapsedMD = new Set();
 let bolaoApostas = {nuno:{},patricinha:{}};
 let bolaoResultados = {};
 let bolaoBonus = {nuno:{},patricinha:{}};
@@ -1394,11 +1399,26 @@ function renderBolaoJogos() {
     c.innerHTML = [1,2,3].map(md=>{
       const mj = byMD[md];
       if(!mj.length) return '';
-      return `<div class="grupo-lbl">Jornada ${md}</div>`+mj.map(j=>jogoCardHTML(j,true)).join('');
+      const collapsed = collapsedMD.has(md);
+      return `<div class="grupo-lbl md-lbl" id="md-lbl-${md}" onclick="toggleMD(${md})">
+        <span>Jornada ${md}</span>
+        <span class="md-arrow${collapsed?' up':''}">▾</span>
+      </div>
+      <div class="md-games" id="md-games-${md}"${collapsed?' style="display:none"':''}>
+        ${mj.map(j=>jogoCardHTML(j,true)).join('')}
+      </div>`;
     }).join('');
   } else {
     c.innerHTML = jogos.map(j=>jogoCardHTML(j)).join('')||'<div class="empty">Sem jogos nesta fase</div>';
   }
+}
+function toggleMD(md) {
+  if(collapsedMD.has(md)) collapsedMD.delete(md); else collapsedMD.add(md);
+  const collapsed = collapsedMD.has(md);
+  const games = document.getElementById(`md-games-${md}`);
+  const arrow = document.querySelector(`#md-lbl-${md} .md-arrow`);
+  if(games) games.style.display = collapsed ? 'none' : '';
+  if(arrow) arrow.classList.toggle('up', collapsed);
 }
 function jogoCardHTML(jogo, showGrpBadge=false) {
   const mult=getFaseMult(jogo.fase);
