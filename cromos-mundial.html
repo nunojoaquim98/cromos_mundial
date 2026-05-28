@@ -1681,31 +1681,40 @@ function renderBolaoBonus() {
       }).join('')}
     </div>`;
 
+  // Marcador input — shown per player (only the text prediction remains)
+  const marcadorB = BONUS_ITEMS.find(x=>x.id==='marcador');
+  const marcadorSection = !adminMode ? `
+    <div class="bonus-card" style="margin-bottom:16px">
+      <div class="bonus-lbl">${marcadorB.nome}</div>
+      <div class="bonus-pts-lbl">+${marcadorB.pts} pontos se acertares</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${['nuno','patricinha'].map(pl=>{
+          const pred=(bolaoBonus[pl]||{})['marcador']||'';
+          const badge=badgeHTML('marcador',pred);
+          return `<div>
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;
+              color:${pl==='nuno'?'var(--blue)':'var(--purple)'};margin-bottom:4px">${pl==='nuno'?'Nuno':'Patricinha'}</div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <input class="bonus-sel" type="text" id="bns_marcador_${pl}" placeholder="Nome do marcador"
+                value="${pred}" style="flex:1" onchange="saveBonusFor('marcador','${pl}')">
+              <div>${badge}</div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>` : '';
+
   document.getElementById('bolao-bonus-content').innerHTML=`
     ${oficialPanel}
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">
-      ${player?`A editar: <strong style="color:${player==='nuno'?'var(--blue)':'var(--purple)'}">${player==='nuno'?'Nuno':'Patricinha'}</strong>`:'Seleciona um jogador em cima para fazer apostas'}
-    </div>
-    <div class="bonus-grid">
-      ${BONUS_ITEMS.map(b=>{
-        const oficial=getOfficialBonus(b.id);
-        const pred=(bolaoBonus[player]||{})[b.id];
-        const badge=player?badgeHTML(b.id,pred):'';
-        return `<div class="bonus-card">
-          <div class="bonus-lbl">${b.nome}</div>
-          <div class="bonus-pts-lbl">+${b.pts} pontos</div>
-          ${b.tipo==='team'
-            ?`<select class="bonus-sel" id="bns_${b.id}" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">
-                <option value="">— Escolher —</option>${teamOpts}</select>`
-            :`<input class="bonus-sel" type="text" id="bns_${b.id}" placeholder="Nome do jogador" ${!player?'disabled':''} onchange="saveBonus('${b.id}')">`
-          }
-          ${badge?`<div style="margin-top:6px">${badge}</div>`:''}
-        </div>`;
-      }).join('')}
-    </div>
+    ${marcadorSection}
     ${compTable}`;
 
-  if(player) BONUS_ITEMS.forEach(b=>{const el=document.getElementById(`bns_${b.id}`);if(el&&myB[b.id])el.value=myB[b.id];});
+  if(!adminMode) {
+    ['nuno','patricinha'].forEach(pl=>{
+      const el=document.getElementById(`bns_marcador_${pl}`);
+      if(el&&bolaoBonus[pl]?.marcador) el.value=bolaoBonus[pl].marcador;
+    });
+  }
 }
 function saveBonus(tipo) {
   if(!bolaoPlayer) return;
@@ -1715,6 +1724,14 @@ function saveBonus(tipo) {
   bolaoBonus[bolaoPlayer][tipo]=el.value;
   sb.from('bolao_bonus').upsert({jogador:bolaoPlayer,tipo,valor:el.value},{onConflict:'jogador,tipo'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);});
+}
+function saveBonusFor(tipo, player) {
+  const el=document.getElementById(`bns_${tipo}_${player}`);
+  if(!el) return;
+  if(!bolaoBonus[player]) bolaoBonus[player]={};
+  bolaoBonus[player][tipo]=el.value;
+  sb.from('bolao_bonus').upsert({jogador:player,tipo,valor:el.value},{onConflict:'jogador,tipo'})
+    .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else showToast('Guardado ✓',false);});
 }
 
 async function limparResultados() {
