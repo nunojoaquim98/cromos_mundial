@@ -245,7 +245,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bfase-btn{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
 .bfase-btn.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
 .bolao-content{padding:20px 24px;max-width:860px;margin:0 auto}
-.grupo-lbl{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;row-gap:6px}
+.grupo-lbl{font-family:'Bebas Neue',sans-serif;font-size:.9rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;margin:18px 0 8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
 .jcard{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 14px;margin-bottom:8px;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
 .jteam{display:flex;align-items:center;gap:6px}
 .jteam.r{flex-direction:row-reverse}
@@ -1270,18 +1270,7 @@ function renderBolaoJogos() {
     c.innerHTML = [1,2,3].map(md=>{
       const mj = byMD[md];
       if(!mj.length) return '';
-      // Collect unique groups in this matchday (in kickoff order)
-      const grupasOrdered = [...new Set(mj.map(j=>j.grupo))];
-      const apagarBtns = bolaoPlayer ? grupasOrdered.map(g=>
-        `<button onclick="apagarGrupo('${g}')"
-          style="font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:600;letter-spacing:.05em;
-          text-transform:uppercase;padding:2px 7px;border:1px solid var(--red);background:transparent;
-          color:var(--red);border-radius:4px;cursor:pointer;opacity:.7">✕ Grp ${g}</button>`
-      ).join('') : '';
-      return `<div class="grupo-lbl" style="flex-wrap:wrap;gap:6px">
-        <span>Jornada ${md}</span>
-        ${apagarBtns?`<div style="display:flex;flex-wrap:wrap;gap:4px">${apagarBtns}</div>`:''}
-      </div>`+mj.map(j=>jogoCardHTML(j,true)).join('');
+      return `<div class="grupo-lbl">Jornada ${md}</div>`+mj.map(j=>jogoCardHTML(j,true)).join('');
     }).join('');
   } else {
     c.innerHTML = jogos.map(j=>jogoCardHTML(j)).join('')||'<div class="empty">Sem jogos nesta fase</div>';
@@ -1584,16 +1573,7 @@ function saveBonus(tipo) {
   sb.from('bolao_bonus').upsert({jogador:bolaoPlayer,tipo,valor:el.value},{onConflict:'jogador,tipo'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);});
 }
-async function apagarGrupo(grupo) {
-  if(!bolaoPlayer) return;
-  if(!confirm(`Apagar todos os prognósticos do Grupo ${grupo} para ${bolaoPlayer==='nuno'?'Nuno':'Patricinha'}?`)) return;
-  const ids = TODOS_JOGOS.filter(j=>j.fase==='grupo'&&j.grupo===grupo).map(j=>j.id);
-  if(!bolaoApostas[bolaoPlayer]) bolaoApostas[bolaoPlayer]={};
-  ids.forEach(id=>delete bolaoApostas[bolaoPlayer][id]);
-  const {error} = await sb.from('bolao_apostas').delete().eq('jogador',bolaoPlayer).in('jogo_id',ids);
-  if(error) showToast('Erro: '+error.message,true);
-  else { showToast(`Grupo ${grupo} apagado ✓`,false); renderBolaoJogos(); }
-}
+
 async function limparResultados() {
   if (!confirm('Apagar todos os resultados inseridos?')) return;
   bolaoResultados = {};
