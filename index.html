@@ -302,6 +302,39 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .grp-badge{font-family:'Bebas Neue',sans-serif;font-size:.65rem;letter-spacing:.1em;color:var(--surface);background:var(--muted);padding:1px 5px;border-radius:3px;line-height:1.4}
 .jcard.jlocked{border-color:rgba(239,68,68,.25)}
 
+/* ─── SIDEBAR ─── */
+.bolao-layout{display:flex;align-items:flex-start;position:relative}
+.bolao-main{flex:1;min-width:0}
+.sidebar-panel{width:270px;flex-shrink:0;background:var(--surface);border-right:1px solid var(--border);position:sticky;top:0;height:calc(100vh - 110px);overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:var(--border) transparent;transition:transform .22s ease,opacity .22s ease}
+.sidebar-panel::-webkit-scrollbar{width:4px}
+.sidebar-panel::-webkit-scrollbar-track{background:transparent}
+.sidebar-panel::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.sidebar-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 14px 8px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--surface);z-index:1}
+.sidebar-hdr-lbl{font-family:'Bebas Neue',sans-serif;font-size:.85rem;letter-spacing:.18em;color:var(--muted);text-transform:uppercase}
+.sidebar-close{background:transparent;border:none;color:var(--muted);font-size:1rem;cursor:pointer;padding:2px 6px;line-height:1;border-radius:4px}
+.sidebar-close:hover{color:var(--text)}
+.sidebar-body{padding:8px 0 24px}
+.sb-group{padding:0 0 4px}
+.sb-group-lbl{font-family:'Bebas Neue',sans-serif;font-size:.75rem;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;padding:8px 14px 4px;border-top:1px solid var(--border)}
+.sb-group:first-child .sb-group-lbl{border-top:none}
+.sb-jogo{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:4px;padding:4px 10px;cursor:pointer;border-radius:5px;margin:1px 4px;transition:background .12s}
+.sb-jogo:hover{background:var(--surface2)}
+.sb-team{font-family:'Barlow Condensed',sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.03em;text-transform:uppercase;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:3px}
+.sb-team.r{justify-content:flex-end;flex-direction:row-reverse}
+.sb-score{font-family:'Bebas Neue',sans-serif;font-size:.78rem;letter-spacing:.04em;color:var(--muted);text-align:center;white-space:nowrap;padding:0 3px;min-width:32px}
+.sb-score.res{color:var(--blue)}
+.sb-score.lock{color:var(--red);font-size:.6rem;font-family:'Barlow Condensed',sans-serif}
+.sb-score.soon{color:var(--gold);font-size:.58rem;font-family:'Barlow Condensed',sans-serif;letter-spacing:.04em}
+.sidebar-toggle-btn{display:flex;align-items:center;gap:5px;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:4px 10px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;transition:all .15s}
+.sidebar-toggle-btn.active{background:var(--surface3);color:var(--text);border-color:var(--border2)}
+.sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:90}
+@media(max-width:900px){
+  .sidebar-panel{display:none;position:fixed;left:0;top:0;bottom:0;height:100vh;z-index:95;border-right:1px solid var(--border);box-shadow:4px 0 24px rgba(0,0,0,.3)}
+  .sidebar-panel.open{display:block}
+  .sidebar-overlay.open{display:block}
+  .bolao-layout{display:block}
+}
+
 /* ─── LANDING ─── */
 .landing-wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:40px;padding:32px;background:radial-gradient(ellipse at 50% 0%,#0d1f3c 0%,var(--bg) 65%);position:relative}
 .landing-logo{font-family:'Bebas Neue',sans-serif;font-size:2.4rem;letter-spacing:.12em;color:var(--gold);text-align:center;line-height:1}
@@ -597,7 +630,19 @@ body.light .jpts.p0 { background: #f1f5f9; }
   </div>
   <div id="bt-jogos-content">
     <div class="bfase-bar" id="bfase-bar"></div>
-    <div class="bolao-content" id="bolao-games"></div>
+    <div class="bolao-layout">
+      <div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+      <aside class="sidebar-panel" id="sidebar-panel" style="display:none">
+        <div class="sidebar-hdr">
+          <span class="sidebar-hdr-lbl">Por Grupo</span>
+          <button class="sidebar-close" onclick="closeSidebar()">✕</button>
+        </div>
+        <div class="sidebar-body" id="sidebar-body"></div>
+      </aside>
+      <div class="bolao-main">
+        <div class="bolao-content" id="bolao-games"></div>
+      </div>
+    </div>
   </div>
   <div id="bt-ranking-content" style="display:none">
     <div class="rank-wrap" id="bolao-rank"></div>
@@ -1248,10 +1293,15 @@ function toggleAdmin() {
   renderBolaoJogos();
 }
 function renderBolaoFaseBar() {
-  document.getElementById('bfase-bar').innerHTML = FASES.map(f=>
-    `<button class="bfase-btn${f.id===bolaoFase?' active':''}" data-fase="${f.id}" onclick="setBolaoFase('${f.id}')">
-      ${f.nome} <span style="opacity:.55;font-size:.65rem">×${f.mult}</span></button>`
-  ).join('');
+  const sidebarOpen = document.getElementById('sidebar-panel')?.classList.contains('open') ||
+    (window.innerWidth > 900 && !document.getElementById('sidebar-panel')?.classList.contains('hidden'));
+  const toggleActive = sidebarVisible() ? ' active' : '';
+  document.getElementById('bfase-bar').innerHTML =
+    `<button class="sidebar-toggle-btn${toggleActive}" onclick="toggleSidebar()" title="Ver por grupo">☰ Grupos</button>`+
+    FASES.map(f=>
+      `<button class="bfase-btn${f.id===bolaoFase?' active':''}" data-fase="${f.id}" onclick="setBolaoFase('${f.id}')">
+        ${f.nome} <span style="opacity:.55;font-size:.65rem">×${f.mult}</span></button>`
+    ).join('');
 }
 function getMatchday(jogo) {
   const suf = jogo.id.slice(-2);
@@ -1321,7 +1371,7 @@ function jogoCardHTML(jogo, showGrpBadge=false) {
   const betDisabled = !bolaoPlayer||res!=null||!teamsKnown||locked;
   const cardCls = 'jcard' + (!teamsKnown?' ':'') + (locked?' jlocked':'');
   const cardStyle = !teamsKnown ? 'opacity:.55' : '';
-  return `<div class="${cardCls}" style="${cardStyle}">
+  return `<div class="${cardCls}" id="jcard-${jogo.id}" style="${cardStyle}">
     <div class="jteam"><span class="jflag">${casa.flag}</span><span class="jname">${casa.name}</span></div>
     <div class="jmid">
       ${timeHTML}
@@ -1357,7 +1407,7 @@ function saveResultado(jogoId) {
   const prev=bolaoResultados[jogoId]||{};
   bolaoResultados[jogoId]={...prev,casa:h,fora:a};
   sb.from('bolao_resultados').upsert({jogo_id:jogoId,golo_casa:h,golo_fora:a,vencedor:prev.vencedor||null},{onConflict:'jogo_id'})
-    .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();});
+    .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else{renderBolaoJogos();renderSidebar();}});
 }
 function setPenVencedor(jogoId, teamId) {
   if(!bolaoResultados[jogoId]) return;
@@ -1368,7 +1418,7 @@ function setPenVencedor(jogoId, teamId) {
     golo_fora:bolaoResultados[jogoId].fora,
     vencedor:teamId
   },{onConflict:'jogo_id'}).then(({error})=>{
-    if(error)showToast('Erro: '+error.message,true);else renderBolaoJogos();
+    if(error)showToast('Erro: '+error.message,true);else{renderBolaoJogos();renderSidebar();}
   });
 }
 // ─── BÓNUS OFICIAL ─────────────────────────────────────────────
@@ -1579,7 +1629,94 @@ async function limparResultados() {
   bolaoResultados = {};
   const { error } = await sb.from('bolao_resultados').delete().neq('jogo_id','__none__');
   if (error) showToast('Erro: ' + error.message, true);
-  else { showToast('Resultados apagados', false); renderBolaoJogos(); }
+  else { showToast('Resultados apagados', false); renderBolaoJogos(); renderSidebar(); }
+}
+
+/* ── Sidebar ── */
+let _sidebarOpen = false;
+function sidebarVisible() { return _sidebarOpen; }
+function toggleSidebar() {
+  _sidebarOpen = !_sidebarOpen;
+  applySidebarState();
+  renderBolaoFaseBar(); // update toggle button style
+}
+function closeSidebar() {
+  _sidebarOpen = false;
+  applySidebarState();
+  renderBolaoFaseBar();
+}
+function applySidebarState() {
+  const panel = document.getElementById('sidebar-panel');
+  const overlay = document.getElementById('sidebar-overlay');
+  if(!panel) return;
+  const mobile = window.innerWidth <= 900;
+  if(_sidebarOpen) {
+    panel.classList.add('open');
+    if(mobile && overlay) overlay.classList.add('open');
+    renderSidebar();
+  } else {
+    panel.classList.remove('open');
+    if(overlay) overlay.classList.remove('open');
+  }
+  // Desktop: add/remove class to show alongside content
+  if(!mobile) {
+    panel.style.display = _sidebarOpen ? 'block' : 'none';
+  }
+}
+function renderSidebar() {
+  const body = document.getElementById('sidebar-body');
+  if(!body) return;
+  const groups = Object.keys(GRUPOS).sort();
+  body.innerHTML = groups.map(g => {
+    const jogos = TODOS_JOGOS.filter(j=>j.fase==='grupo'&&j.grupo===g)
+      .sort((a,b)=>(a.dt||'').localeCompare(b.dt||''));
+    const rows = jogos.map(j => {
+      const res = bolaoResultados[j.id];
+      const locked = isMatchLocked(j);
+      const casa = getTeamInfo(j.casa);
+      const fora = getTeamInfo(j.fora);
+      let scoreHTML, scoreCls;
+      if(res) { scoreHTML=`${res.casa}–${res.fora}`; scoreCls='res'; }
+      else if(locked) { scoreHTML='🔒'; scoreCls='lock'; }
+      else if(j.dt) {
+        const d=new Date(j.dt), now=new Date();
+        const diff=d-now;
+        if(diff<86400000){
+          const h=Math.floor(diff/3600000), m=Math.floor((diff%3600000)/60000);
+          scoreHTML=`${h}h${m>0?m+'m':''}`; scoreCls='soon';
+        } else {
+          const dd=String(d.getDate()).padStart(2,'0');
+          const mon=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'][d.getMonth()];
+          scoreHTML=`${dd} ${mon}`; scoreCls='soon';
+        }
+      } else { scoreHTML='–'; scoreCls=''; }
+      const md = getMatchday(j);
+      return `<div class="sb-jogo" onclick="jumpToJogo('${j.id}')" title="J${md} · ${casa.name} vs ${fora.name}">
+        <span class="sb-team">${casa.flag} ${casa.name}</span>
+        <span class="sb-score ${scoreCls}">${scoreHTML}</span>
+        <span class="sb-team r">${fora.name} ${fora.flag}</span>
+      </div>`;
+    }).join('');
+    return `<div class="sb-group">
+      <div class="sb-group-lbl">Grupo ${g}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+function jumpToJogo(jogoId) {
+  // Ensure we're on the grupo fase
+  if(bolaoFase!=='grupo') {
+    bolaoFase='grupo';
+    renderBolaoFaseBar();
+    renderBolaoJogos();
+  }
+  // On mobile, close sidebar so the card is visible
+  if(window.innerWidth<=900) closeSidebar();
+  // Scroll to the card
+  requestAnimationFrame(()=>{
+    const el = document.getElementById('jcard-'+jogoId);
+    if(el) el.scrollIntoView({behavior:'smooth', block:'center'});
+  });
 }
 
 async function syncBolaoFromSupabase() {
@@ -1600,6 +1737,7 @@ async function syncBolaoFromSupabase() {
   renderBolaoJogos();
   if(bolaoTab==='ranking') renderBolaoRanking();
   if(bolaoTab==='bonus') renderBolaoBonus();
+  if(_sidebarOpen) renderSidebar();
 }
 
 // ─── AUTH ──────────────────────────────────────────────────────
