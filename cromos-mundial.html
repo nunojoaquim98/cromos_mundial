@@ -296,6 +296,34 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .bonus-hit{background:rgba(34,197,94,.15);color:var(--green);border:1px solid #1a4a2a;font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
 .bonus-miss{background:rgba(239,68,68,.1);color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:.72rem;padding:2px 8px;border-radius:3px;white-space:nowrap}
 .bonus-pend{color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:.65rem;white-space:nowrap}
+
+/* ─── REGRAS ─── */
+.regras-wrap{padding:20px 24px;max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+.regras-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+.regras-title{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.18em;color:var(--gold);text-transform:uppercase;margin-bottom:6px}
+.regras-desc{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.regras-table{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.rt-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;gap:12px;border-bottom:1px solid var(--border);font-family:'Barlow Condensed',sans-serif;font-size:.82rem;color:var(--text)}
+.rt-row:last-child{border-bottom:none}
+.rt-head{background:var(--surface2);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.rt-pts{font-family:'Bebas Neue',sans-serif;font-size:.92rem;letter-spacing:.06em;white-space:nowrap}
+.rt-pts.gold{color:var(--gold)}
+.rt-pts.blue{color:var(--blue)}
+.rt-pts.green{color:var(--green)}
+.rt-pts.muted{color:var(--muted)}
+.regras-mult-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-bottom:12px}
+.regras-mult-card{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center}
+.rmc-fase{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.rmc-mult{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:var(--gold);line-height:1}
+.regras-example{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:var(--text2);background:var(--surface2);border-radius:6px;padding:8px 12px;border-left:3px solid var(--gold)}
+.regras-example .rex-lbl{color:var(--muted);margin-right:4px}
+.regras-example strong{color:var(--gold)}
+@media(max-width:768px){
+  .regras-wrap{padding:10px 12px;gap:14px}
+  .regras-section{padding:14px 14px}
+  .regras-mult-grid{grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:6px}
+  .rmc-mult{font-size:1.3rem}
+}
 .jtime-info{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-top:1px;display:flex;align-items:center;justify-content:center;gap:5px;flex-wrap:wrap}
 .jtime-info.locked{color:var(--red)}
 .jtime-info.waiting{color:var(--gold)}
@@ -626,6 +654,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
       <button class="btab active" id="bt-jogos" onclick="setBolaoTab('jogos')">Jogos</button>
       <button class="btab" id="bt-ranking" onclick="setBolaoTab('ranking')">Ranking</button>
       <button class="btab" id="bt-bonus" onclick="setBolaoTab('bonus')">Bónus</button>
+      <button class="btab" id="bt-regras" onclick="setBolaoTab('regras')">Regras</button>
     </div>
   </div>
   <div id="bt-jogos-content">
@@ -649,6 +678,9 @@ body.light .jpts.p0 { background: #f1f5f9; }
   </div>
   <div id="bt-bonus-content" style="display:none">
     <div class="bonus-wrap" id="bolao-bonus-content"></div>
+  </div>
+  <div id="bt-regras-content" style="display:none">
+    <div class="regras-wrap" id="regras-wrap"></div>
   </div>
 </div>
 
@@ -1271,13 +1303,58 @@ function setBolaoPlayer(p) {
 }
 function setBolaoTab(tab) {
   bolaoTab = tab;
-  ['jogos','ranking','bonus'].forEach(t=>{
+  ['jogos','ranking','bonus','regras'].forEach(t=>{
     document.getElementById(`bt-${t}-content`).style.display=t===tab?'':'none';
     document.getElementById(`bt-${t}`).classList.toggle('active',t===tab);
   });
   if(tab==='ranking') renderBolaoRanking();
   if(tab==='bonus') renderBolaoBonus();
   if(tab==='jogos') { renderBolaoFaseBar(); renderBolaoJogos(); }
+  if(tab==='regras') renderBolaoRegras();
+}
+function renderBolaoRegras() {
+  const multCards = FASES.map(f=>`
+    <div class="regras-mult-card">
+      <div class="rmc-fase">${f.nome}</div>
+      <div class="rmc-mult">×${f.mult}</div>
+    </div>`).join('');
+  const bonusRows = BONUS_ITEMS.map(b=>`
+    <div class="rt-row">
+      <span>${b.nome}</span><span class="rt-pts gold">${b.pts} pts</span>
+    </div>`).join('');
+  document.getElementById('regras-wrap').innerHTML = `
+    <div class="regras-section">
+      <div class="regras-title">⚽ Como Pontuar</div>
+      <div class="regras-desc">Para cada jogo, prevê o resultado final. Os pontos ganhos dependem do grau de acerto e são depois multiplicados pela fase do torneio.</div>
+      <div class="regras-table">
+        <div class="rt-row rt-head"><span>Acerto</span><span>Pontos base</span></div>
+        <div class="rt-row"><span>✅ Resultado exato</span><span class="rt-pts gold">×5</span></div>
+        <div class="rt-row"><span>🎯 Diferença de golos correta</span><span class="rt-pts blue">×3</span></div>
+        <div class="rt-row"><span>📊 Vencedor correto</span><span class="rt-pts green">×2</span></div>
+        <div class="rt-row"><span>⚖️ 1 golo correto</span><span class="rt-pts">×1</span></div>
+        <div class="rt-row"><span>❌ Nada correto</span><span class="rt-pts muted">0</span></div>
+      </div>
+    </div>
+    <div class="regras-section">
+      <div class="regras-title">✖️ Multiplicadores por Fase</div>
+      <div class="regras-desc">Os pontos base são multiplicados conforme a fase do torneio — quanto mais longe, mais valem.</div>
+      <div class="regras-mult-grid">${multCards}</div>
+      <div class="regras-example">
+        <span class="rex-lbl">Exemplo:</span> Resultado exato na Final → 5 × 6 = <strong>30 pts</strong>
+      </div>
+    </div>
+    <div class="regras-section">
+      <div class="regras-title">🏅 Bónus</div>
+      <div class="regras-desc">Previsões feitas antes do início do torneio, reveladas e pontuadas no final. Acessa ao separador <em>Bónus</em> para as preencher.</div>
+      <div class="regras-table">
+        <div class="rt-row rt-head"><span>Previsão</span><span>Pontos</span></div>
+        ${bonusRows}
+      </div>
+    </div>
+    <div class="regras-section">
+      <div class="regras-title">🔒 Bloqueio de Apostas</div>
+      <div class="regras-desc">As apostas ficam bloqueadas automaticamente à hora de início de cada jogo. Depois do apito inicial já não é possível alterar a previsão.</div>
+    </div>`;
 }
 function setBolaoFase(fase) {
   bolaoFase = fase;
