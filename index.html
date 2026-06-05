@@ -945,8 +945,18 @@ function openItem(id) {
 }
 
 function goHome() {
+  // If we're inside a country detail, go back to the country list
+  if (document.getElementById('view-detail').classList.contains('active')) {
+    currentItem = null;
+    document.getElementById('view-detail').classList.remove('active');
+    document.getElementById('view-home').classList.add('active');
+    document.getElementById('header-stats').style.display = 'flex';
+    document.getElementById('app-progbar').style.display = 'block';
+    window.scrollTo(0, 0);
+    return;
+  }
+  // Otherwise go back to the landing page
   currentItem = null;
-  document.getElementById('view-detail').classList.remove('active');
   document.getElementById('view-bolao').classList.remove('active');
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-landing').classList.add('active');
