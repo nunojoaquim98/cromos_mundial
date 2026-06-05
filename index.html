@@ -465,7 +465,18 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
   .ccard-name { font-size: 0.72rem; }
 
   /* ── Sticker grid ── */
-  .sticker-grid { padding: 10px 12px; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px; }
+  .sticker-grid {
+    padding: 10px 12px;
+    padding-bottom: max(48px, calc(32px + env(safe-area-inset-bottom)));
+    grid-template-columns: repeat(auto-fill, minmax(86px, 1fr));
+    gap: 6px;
+  }
+  .sticker { padding: 10px 6px 8px; gap: 5px; }
+  .sticker-num { font-size: 1.35rem; }
+  .sticker-status { font-size: 0.58rem; }
+  .sticker-row { gap: 2px; }
+  .sbtn { width: 23px; height: 23px; font-size: 0.78rem; }
+  .srep-count { font-size: 0.88rem; min-width: 14px; }
 
   /* ── Detail ── */
   .detail-hero { padding: 16px 12px; gap: 12px; flex-direction: row; flex-wrap: nowrap; }
