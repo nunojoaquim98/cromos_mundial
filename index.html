@@ -1070,9 +1070,11 @@ function resolveItemCode(raw) {
   const byId = ALL_ITEMS.find(x => x.id.toUpperCase() === up);
   return byId ? byId.id : null;
 }
+let _trocasNeeded = [];
 function openTrocasModal() {
   document.getElementById('trocas-modal').style.display = 'flex';
   document.getElementById('trocas-result').innerHTML = '';
+  _trocasNeeded = [];
 }
 function closeTrocasModal() {
   document.getElementById('trocas-modal').style.display = 'none';
@@ -1098,11 +1100,13 @@ function calcTrocas() {
       return !s.have;
     });
     if (missing.length > 0) {
+      const code = item.code || rawCode.toUpperCase();
       const label = item.flag || item.icon || '';
-      needed.push({ label: `${item.code || rawCode.toUpperCase()} ${label}`, nums: missing });
+      needed.push({ code, label: `${code} ${label}`, nums: missing });
     }
   });
 
+  _trocasNeeded = needed;
   const resEl = document.getElementById('trocas-result');
   if (needed.length === 0 && unknown.length === 0) {
     resEl.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:var(--green);text-align:center;padding:12px">
@@ -1120,12 +1124,29 @@ function calcTrocas() {
         <span style="color:var(--gold);letter-spacing:.04em">${r.nums.join(', ')}</span>
       </div>`
     ).join('');
+    html += `<button onclick="exportTrocasResult()"
+      style="width:100%;margin-top:10px;font-family:'Barlow Condensed',sans-serif;font-size:.8rem;font-weight:700;
+        letter-spacing:.08em;text-transform:uppercase;padding:9px;background:transparent;
+        color:var(--gold);border:1px solid var(--gold);border-radius:8px;cursor:pointer">
+      📋 Exportar lista
+    </button>`;
   }
   if (unknown.length > 0) {
     html += `<div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--red);margin-top:10px">
       Códigos não reconhecidos: ${unknown.join(', ')}</div>`;
   }
   resEl.innerHTML = html;
+}
+function exportTrocasResult() {
+  if (!_trocasNeeded.length) return;
+  const text = _trocasNeeded.map(r => `${r.code}: ${r.nums.join(',')}`).join('\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cromos_necessarios.txt';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 function exportRepetidos() {
