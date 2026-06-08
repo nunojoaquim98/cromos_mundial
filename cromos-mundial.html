@@ -642,6 +642,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
       <span class="search-icon">🔍</span>
       <input class="search-input" type="text" placeholder="Pesquisar..." id="search" oninput="renderHome()">
     </div>
+    <button class="filter-btn" onclick="exportRepetidos()" title="Exportar lista de repetidos">📋 Repetidos</button>
   </div>
   <main>
     <div class="sec-head">🌍 Países <small id="c-count"></small></div>
@@ -1049,6 +1050,38 @@ function clearCountry() {
   sb.from('cromos').delete().eq('item_id', currentItem.id).then(({ error }) => {
     if (error) console.warn('Supabase delete error:', error);
   });
+}
+
+function exportRepetidos() {
+  const lines = [];
+  ALL_ITEMS.forEach(item => {
+    const itemCount = item.count || STICKER_COUNT;
+    const startAt = item.startAt !== undefined ? item.startAt : 1;
+    const repeated = [];
+    for (let i = startAt; i < startAt + itemCount; i++) {
+      const s = getSticker(item.id, i);
+      if (s.have && s.repeat > 0) {
+        // push the number once per extra copy (repeat=1 → 1 extra, repeat=2 → 2 extras, etc.)
+        for (let r = 0; r < s.repeat; r++) repeated.push(i);
+      }
+    }
+    if (repeated.length > 0) {
+      const code = item.code || item.id.toUpperCase();
+      lines.push(`${code}: ${repeated.join(',')}`);
+    }
+  });
+  if (lines.length === 0) {
+    showToast('Sem cromos repetidos para exportar', false);
+    return;
+  }
+  const text = lines.join('\n');
+  const blob = new Blob([text], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'cromos_repetidos.txt';
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 // ─── BOLÃO DATA ────────────────────────────────────────────────
