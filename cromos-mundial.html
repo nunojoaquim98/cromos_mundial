@@ -643,6 +643,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
       <input class="search-input" type="text" placeholder="Pesquisar..." id="search" oninput="renderHome()">
     </div>
     <button class="filter-btn" onclick="exportRepetidos()" title="Exportar lista de repetidos">📋 Repetidos</button>
+    <button class="filter-btn" onclick="openTrocasModal()" title="Ver o que precisas de uma lista de trocas">🔄 Trocas</button>
   </div>
   <main>
     <div class="sec-head">🌍 Países <small id="c-count"></small></div>
@@ -1050,6 +1051,81 @@ function clearCountry() {
   sb.from('cromos').delete().eq('item_id', currentItem.id).then(({ error }) => {
     if (error) console.warn('Supabase delete error:', error);
   });
+}
+
+// Aliases for codes that differ between the list format and the system codes
+const CODE_ALIASES = {
+  'MAR':'mor','KSA':'sau','SAU':'sau','FWC':'sp_fwc','IRN':'irn','IRQ':'irq',
+  'KOR':'kor','NZL':'nzl','UZB':'uzb','JOR':'jor','COD':'cod','CPV':'cpv',
+  'CUW':'cuw','HAI':'hai','SCO':'sco','BIH':'bih','QAT':'qat','GHA':'gha',
+  'PAN':'pan','PAR':'par','AUS':'aus','ENG':'eng','CRO':'cro','SWE':'swe',
+};
+function resolveItemCode(raw) {
+  const up = raw.toUpperCase();
+  if (CODE_ALIASES[up]) return CODE_ALIASES[up];
+  // Try matching by code field in ALL_ITEMS
+  const byCode = ALL_ITEMS.find(x => x.code && x.code.toUpperCase() === up);
+  if (byCode) return byCode.id;
+  // Try matching by id directly
+  const byId = ALL_ITEMS.find(x => x.id.toUpperCase() === up);
+  return byId ? byId.id : null;
+}
+function openTrocasModal() {
+  document.getElementById('trocas-modal').style.display = 'flex';
+  document.getElementById('trocas-result').innerHTML = '';
+}
+function closeTrocasModal() {
+  document.getElementById('trocas-modal').style.display = 'none';
+}
+function calcTrocas() {
+  const raw = document.getElementById('trocas-input').value;
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+  const needed = [];
+  const unknown = [];
+
+  lines.forEach(line => {
+    // Parse "CODE [optional emoji/text]: num, num, ..."
+    const m = line.match(/^([A-Z0-9_]+)\s*[^:]*:\s*(.+)$/i);
+    if (!m) return;
+    const rawCode = m[1].trim();
+    const nums = m[2].split(',').map(n => parseInt(n.trim())).filter(n => !isNaN(n));
+    const itemId = resolveItemCode(rawCode);
+    if (!itemId) { unknown.push(rawCode); return; }
+    const item = ALL_ITEMS.find(x => x.id === itemId);
+    if (!item) { unknown.push(rawCode); return; }
+    const missing = nums.filter(n => {
+      const s = getSticker(itemId, n);
+      return !s.have;
+    });
+    if (missing.length > 0) {
+      const label = item.flag || item.icon || '';
+      needed.push({ label: `${item.code || rawCode.toUpperCase()} ${label}`, nums: missing });
+    }
+  });
+
+  const resEl = document.getElementById('trocas-result');
+  if (needed.length === 0 && unknown.length === 0) {
+    resEl.innerHTML = `<div style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:var(--green);text-align:center;padding:12px">
+      ✅ Já tens todos os cromos desta lista!</div>`;
+    return;
+  }
+  let html = '';
+  if (needed.length > 0) {
+    html += `<div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">
+      Cromos que precisas (${needed.reduce((s,x)=>s+x.nums.length,0)} total)</div>`;
+    html += needed.map(r =>
+      `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:6px 10px;
+        border-radius:6px;background:var(--surface2);margin-bottom:4px;font-family:'Barlow Condensed',sans-serif;font-size:.85rem">
+        <span style="color:var(--text);font-weight:600">${r.label}</span>
+        <span style="color:var(--gold);letter-spacing:.04em">${r.nums.join(', ')}</span>
+      </div>`
+    ).join('');
+  }
+  if (unknown.length > 0) {
+    html += `<div style="font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--red);margin-top:10px">
+      Códigos não reconhecidos: ${unknown.join(', ')}</div>`;
+  }
+  resEl.innerHTML = html;
 }
 
 function exportRepetidos() {
@@ -2055,6 +2131,31 @@ if (localStorage.getItem('mundial_admin') === '1') {
   adminMode = true;
 }
 </script>
+
+<!-- ═══ TROCAS MODAL ═══ -->
+<div id="trocas-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:24px;width:100%;max-width:500px;box-shadow:0 8px 40px rgba(0,0,0,.4);margin:auto">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:.18em;color:var(--gold);margin-bottom:4px">🔄 Verificar Trocas</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:var(--muted);margin-bottom:14px">Cola aqui a lista de cromos disponíveis para troca. A app mostra o que ainda te falta.</div>
+    <textarea id="trocas-input" placeholder="FWC: 7, 8&#10;MEX: 5, 10, 12&#10;POR: 1, 3, 7..."
+      style="width:100%;box-sizing:border-box;height:180px;background:var(--surface2);border:1px solid var(--border2);
+        color:var(--text);padding:10px 12px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;
+        font-size:.82rem;outline:none;resize:vertical;line-height:1.6"></textarea>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button onclick="calcTrocas()"
+        style="flex:1;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.08em;
+          text-transform:uppercase;padding:10px;background:var(--gold);color:#000;border:none;border-radius:8px;cursor:pointer">
+        Verificar
+      </button>
+      <button onclick="closeTrocasModal()"
+        style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;padding:10px 16px;background:transparent;
+          color:var(--muted);border:1px solid var(--border);border-radius:8px;cursor:pointer">
+        Fechar
+      </button>
+    </div>
+    <div id="trocas-result" style="margin-top:16px"></div>
+  </div>
+</div>
 
 <!-- ═══ ADMIN LOGIN MODAL ═══ -->
 <div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;align-items:center;justify-content:center;padding:20px">
