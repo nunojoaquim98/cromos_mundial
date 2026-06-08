@@ -1060,10 +1060,7 @@ function exportRepetidos() {
     const repeated = [];
     for (let i = startAt; i < startAt + itemCount; i++) {
       const s = getSticker(item.id, i);
-      if (s.have && s.repeat > 0) {
-        // push the number once per extra copy (repeat=1 → 1 extra, repeat=2 → 2 extras, etc.)
-        for (let r = 0; r < s.repeat; r++) repeated.push(i);
-      }
+      if (s.have && s.repeat > 0) repeated.push(i);
     }
     if (repeated.length > 0) {
       const code = item.code || item.id.toUpperCase();
