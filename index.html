@@ -1231,6 +1231,8 @@ const BONUS_ITEMS = [
   {id:'terceiro_bonus',nome:'🥉 3º Lugar',pts:10,tipo:'team'},
   {id:'marcador',nome:'⚽ Melhor Marcador',pts:10,tipo:'text'},
 ];
+// Deadline: kickoff of the first WC match (Group A MD1)
+const MARCADOR_DEADLINE = '2026-06-11T19:00Z';
 function gerarJogosGrupo() {
   const jogos = [], pairs = [[0,1],[2,3],[0,2],[1,3],[0,3],[1,2]];
   Object.entries(GRUPOS).forEach(([g,t]) => {
@@ -1833,21 +1835,40 @@ function renderBolaoBonus() {
 
   // Marcador input — only for the selected player
   const marcadorB = BONUS_ITEMS.find(x=>x.id==='marcador');
+  const deadlinePassed = new Date() >= new Date(MARCADOR_DEADLINE);
   let marcadorSection = '';
   if(!adminMode) {
     if(player) {
       const pred=(bolaoBonus[player]||{})['marcador']||'';
+      const manualLocked=(bolaoBonus[player]||{})['marcador_locked']==='1';
+      const isLocked = deadlinePassed || manualLocked;
       const badge=badgeHTML('marcador',pred);
       const playerColor=player==='nuno'?'var(--blue)':'var(--purple)';
+      const deadlineDate = new Date(MARCADOR_DEADLINE);
+      const deadlineStr = `${String(deadlineDate.getDate()).padStart(2,'0')} Jun · ${String(deadlineDate.getHours()).padStart(2,'0')}:${String(deadlineDate.getMinutes()).padStart(2,'0')}`;
       marcadorSection=`
         <div class="bonus-card" style="margin-bottom:16px">
           <div class="bonus-lbl">${marcadorB.nome}</div>
-          <div class="bonus-pts-lbl">+${marcadorB.pts} pontos se acertares</div>
-          <div style="display:flex;gap:6px;align-items:center;margin-top:4px">
+          <div class="bonus-pts-lbl">+${marcadorB.pts} pontos se acertares · prazo: ${deadlineStr}</div>
+          <div style="display:flex;gap:6px;align-items:center;margin-top:8px">
             <input class="bonus-sel" type="text" id="bns_marcador_${player}" placeholder="Nome do marcador"
-              value="${pred}" style="flex:1;border-color:${playerColor}" onchange="saveBonusFor('marcador','${player}')">
+              value="${pred}" style="flex:1;border-color:${isLocked?'var(--muted)':playerColor};opacity:${isLocked?.6:1}"
+              ${isLocked?'disabled':''} onchange="saveBonusFor('marcador','${player}')">
             <div>${badge}</div>
           </div>
+          ${isLocked
+            ? `<div style="display:flex;align-items:center;gap:5px;margin-top:8px;font-family:'Barlow Condensed',sans-serif;font-size:.72rem;color:var(--red);letter-spacing:.06em">
+                🔒 ${deadlinePassed?'Prazo encerrado':'Resposta bloqueada'}
+              </div>`
+            : `<button onclick="lockMarcador('${player}')"
+                style="margin-top:8px;width:100%;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:600;
+                  letter-spacing:.08em;text-transform:uppercase;padding:8px;background:transparent;
+                  color:var(--muted);border:1px solid var(--muted);border-radius:6px;cursor:pointer;transition:all .15s"
+                onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'"
+                onmouseout="this.style.borderColor='var(--muted)';this.style.color='var(--muted)'">
+                🔒 Bloquear resposta
+              </button>`
+          }
         </div>`;
     } else {
       marcadorSection=`
@@ -1879,6 +1900,16 @@ function saveBonusFor(tipo, player) {
   bolaoBonus[player][tipo]=el.value;
   sb.from('bolao_bonus').upsert({jogador:player,tipo,valor:el.value},{onConflict:'jogador,tipo'})
     .then(({error})=>{if(error)showToast('Erro: '+error.message,true);else showToast('Guardado ✓',false);});
+}
+function lockMarcador(player) {
+  if(!confirm(`Bloquear a previsão do marcador para ${player==='nuno'?'Nuno':'Patricinha'}? Não poderás alterar depois.`)) return;
+  if(!bolaoBonus[player]) bolaoBonus[player]={};
+  bolaoBonus[player]['marcador_locked']='1';
+  sb.from('bolao_bonus').upsert({jogador:player,tipo:'marcador_locked',valor:'1'},{onConflict:'jogador,tipo'})
+    .then(({error})=>{
+      if(error) showToast('Erro: '+error.message,true);
+      else { showToast('Resposta bloqueada 🔒',false); renderBolaoBonus(); }
+    });
 }
 
 async function limparResultados() {
