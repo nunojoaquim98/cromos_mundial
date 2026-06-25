@@ -1246,32 +1246,32 @@ function gerarJogosGrupo() {
   return jogos;
 }
 const JOGOS_KO = [
-  // ── 16 AVOS (Jun 28–Jul 3, ET→UTC) ──
-  {id:'R32_01',fase:'dezasseis',dt:'2026-06-28T19:00Z',casa:'1ºA',fora:'2ºC'},
-  {id:'R32_02',fase:'dezasseis',dt:'2026-06-29T20:30Z',casa:'1ºC',fora:'2ºA'},
-  {id:'R32_03',fase:'dezasseis',dt:'2026-06-30T01:00Z',casa:'1ºB',fora:'2ºD'},
-  {id:'R32_04',fase:'dezasseis',dt:'2026-06-29T17:00Z',casa:'1ºD',fora:'2ºB'},
-  {id:'R32_05',fase:'dezasseis',dt:'2026-06-30T21:00Z',casa:'1ºE',fora:'2ºG'},
-  {id:'R32_06',fase:'dezasseis',dt:'2026-06-30T17:00Z',casa:'1ºG',fora:'2ºE'},
-  {id:'R32_07',fase:'dezasseis',dt:'2026-07-01T01:00Z',casa:'1ºF',fora:'2ºH'},
-  {id:'R32_08',fase:'dezasseis',dt:'2026-07-01T16:00Z',casa:'1ºH',fora:'2ºF'},
-  {id:'R32_09',fase:'dezasseis',dt:'2026-07-02T00:00Z',casa:'1ºI',fora:'2ºK'},
-  {id:'R32_10',fase:'dezasseis',dt:'2026-07-01T20:00Z',casa:'1ºK',fora:'2ºI'},
-  {id:'R32_11',fase:'dezasseis',dt:'2026-07-02T23:00Z',casa:'1ºJ',fora:'2ºL'},
-  {id:'R32_12',fase:'dezasseis',dt:'2026-07-02T19:00Z',casa:'1ºL',fora:'2ºJ'},
-  {id:'R32_13',fase:'dezasseis',dt:'2026-07-03T03:00Z',casa:'3TH_0',fora:'3TH_7'},
-  {id:'R32_14',fase:'dezasseis',dt:'2026-07-03T22:00Z',casa:'3TH_1',fora:'3TH_6'},
-  {id:'R32_15',fase:'dezasseis',dt:'2026-07-04T01:30Z',casa:'3TH_2',fora:'3TH_5'},
-  {id:'R32_16',fase:'dezasseis',dt:'2026-07-03T18:00Z',casa:'3TH_3',fora:'3TH_4'},
+  // ── 16 AVOS (Jun 28–Jul 4) ──  source: FIFA/ESPN/SkySports confirmed UTC
+  {id:'R32_01',fase:'dezasseis',dt:'2026-06-28T19:00Z',casa:'2ºA',fora:'2ºB'},
+  {id:'R32_02',fase:'dezasseis',dt:'2026-06-29T17:00Z',casa:'1ºC',fora:'2ºF'},
+  {id:'R32_03',fase:'dezasseis',dt:'2026-06-29T20:30Z',casa:'1ºE',fora:'3ºABCDF'},
+  {id:'R32_04',fase:'dezasseis',dt:'2026-06-30T01:00Z',casa:'1ºF',fora:'2ºC'},
+  {id:'R32_05',fase:'dezasseis',dt:'2026-06-30T17:00Z',casa:'2ºE',fora:'2ºI'},
+  {id:'R32_06',fase:'dezasseis',dt:'2026-06-30T21:00Z',casa:'1ºI',fora:'3ºCDFGH'},
+  {id:'R32_07',fase:'dezasseis',dt:'2026-07-01T01:00Z',casa:'1ºA',fora:'3ºCEFHI'},
+  {id:'R32_08',fase:'dezasseis',dt:'2026-07-01T16:00Z',casa:'1ºL',fora:'3ºEHIJK'},
+  {id:'R32_09',fase:'dezasseis',dt:'2026-07-01T20:00Z',casa:'1ºG',fora:'3ºAEHIJ'},
+  {id:'R32_10',fase:'dezasseis',dt:'2026-07-02T00:00Z',casa:'1ºD',fora:'3ºBEFIJ'},
+  {id:'R32_11',fase:'dezasseis',dt:'2026-07-02T19:00Z',casa:'1ºH',fora:'2ºJ'},
+  {id:'R32_12',fase:'dezasseis',dt:'2026-07-02T23:00Z',casa:'2ºK',fora:'2ºL'},
+  {id:'R32_13',fase:'dezasseis',dt:'2026-07-03T03:00Z',casa:'1ºB',fora:'3ºEFGIJ'},
+  {id:'R32_14',fase:'dezasseis',dt:'2026-07-03T18:00Z',casa:'2ºD',fora:'2ºG'},
+  {id:'R32_15',fase:'dezasseis',dt:'2026-07-03T22:00Z',casa:'1ºJ',fora:'2ºH'},
+  {id:'R32_16',fase:'dezasseis',dt:'2026-07-04T01:30Z',casa:'1ºK',fora:'3ºDEIJL'},
   // ── OITAVOS (Jul 4–7) ──
-  {id:'R16_01',fase:'oitavos',dt:'2026-07-04T17:00Z',casa:'VR32_01',fora:'VR32_03'},
-  {id:'R16_02',fase:'oitavos',dt:'2026-07-04T21:00Z',casa:'VR32_02',fora:'VR32_04'},
-  {id:'R16_03',fase:'oitavos',dt:'2026-07-05T20:00Z',casa:'VR32_05',fora:'VR32_07'},
-  {id:'R16_04',fase:'oitavos',dt:'2026-07-06T00:00Z',casa:'VR32_06',fora:'VR32_08'},
-  {id:'R16_05',fase:'oitavos',dt:'2026-07-06T19:00Z',casa:'VR32_09',fora:'VR32_11'},
-  {id:'R16_06',fase:'oitavos',dt:'2026-07-07T00:00Z',casa:'VR32_10',fora:'VR32_12'},
-  {id:'R16_07',fase:'oitavos',dt:'2026-07-07T16:00Z',casa:'VR32_13',fora:'VR32_15'},
-  {id:'R16_08',fase:'oitavos',dt:'2026-07-07T20:00Z',casa:'VR32_14',fora:'VR32_16'},
+  {id:'R16_01',fase:'oitavos',dt:'2026-07-04T17:00Z',casa:'VR32_03',fora:'VR32_06'},
+  {id:'R16_02',fase:'oitavos',dt:'2026-07-04T21:00Z',casa:'VR32_01',fora:'VR32_04'},
+  {id:'R16_03',fase:'oitavos',dt:'2026-07-05T20:00Z',casa:'VR32_02',fora:'VR32_05'},
+  {id:'R16_04',fase:'oitavos',dt:'2026-07-06T00:00Z',casa:'VR32_07',fora:'VR32_08'},
+  {id:'R16_05',fase:'oitavos',dt:'2026-07-06T19:00Z',casa:'VR32_12',fora:'VR32_11'},
+  {id:'R16_06',fase:'oitavos',dt:'2026-07-07T00:00Z',casa:'VR32_10',fora:'VR32_09'},
+  {id:'R16_07',fase:'oitavos',dt:'2026-07-07T16:00Z',casa:'VR32_15',fora:'VR32_14'},
+  {id:'R16_08',fase:'oitavos',dt:'2026-07-07T20:00Z',casa:'VR32_13',fora:'VR32_16'},
   // ── QUARTOS (Jul 9–11) ──
   {id:'QF_1',fase:'quartos',dt:'2026-07-09T20:00Z',casa:'VR16_01',fora:'VR16_02'},
   {id:'QF_2',fase:'quartos',dt:'2026-07-10T19:00Z',casa:'VR16_03',fora:'VR16_04'},
@@ -1335,11 +1335,13 @@ function resolveLabel(label) {
     if(!isGroupComplete(gm[2])) return null;
     const s=getGroupStandings(gm[2]);return s[parseInt(gm[1])-1]?.team||null;
   }
-  // "3TH_N" — só resolve se todos os grupos estiverem completos
-  const tm=label.match(/^3TH_(\d+)$/);
-  if(tm){
+  // "3ºABCDF" — melhor 3º dos grupos listados (top-8 elegíveis)
+  const thm=label.match(/^3º([A-L]+)$/);
+  if(thm){
     if(!allGroupsComplete()) return null;
-    return getBest3rdTeams()[parseInt(tm[1])]?.team||null;
+    const groups=thm[1].split('');
+    const top8=getBest3rdTeams().slice(0,8);
+    return top8.find(t=>groups.includes(t.grupo))?.team||null;
   }
   // "VGAME_ID" - winner
   const vm=label.match(/^V(.+)$/);
@@ -1375,8 +1377,8 @@ function getTeamDisplay(label) {
   // Show pending label nicely
   const gm=label.match(/^(\d)º([A-L])$/);
   if(gm)return{flag:'🔲',name:`${gm[1]}º Grupo ${gm[2]}`,resolved:false};
-  const tm=label.match(/^3TH_(\d+)$/);
-  if(tm)return{flag:'🔲',name:`${parseInt(tm[1])+1}º melhor 3º`,resolved:false};
+  const thm2=label.match(/^3º([A-L]+)$/);
+  if(thm2)return{flag:'🔲',name:`3º (${thm2[1].split('').join('/')})`,resolved:false};
   const vm=label.match(/^V(.+)$/);
   if(vm)return{flag:'🔲',name:`Venc. ${vm[1]}`,resolved:false};
   const pm=label.match(/^P(.+)$/);
