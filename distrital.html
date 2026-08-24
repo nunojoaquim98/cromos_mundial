@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Totobola Distrital 25/26</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,400&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --bg: #080c16;
+  --surface: #0f1520;
+  --surface2: #161e2e;
+  --surface3: #1d2840;
+  --border: #1e2d47;
+  --border2: #253550;
+  --gold: #f5c518;
+  --green: #22c55e;
+  --green-dim: #0a2818;
+  --red: #ef4444;
+  --red-dim: #2a0a0a;
+  --blue: #3b82f6;
+  --blue-dim: #0e2550;
+  --orange: #f97316;
+  --text: #dce6f5;
+  --text2: #8fa5c8;
+  --muted: #4a5f80;
+  --nuno: #3b82f6;
+  --patri: #ec4899;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  min-height: 100dvh;
+}
+
+/* ─── TOP BAR ─── */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  padding-top: max(10px, env(safe-area-inset-top));
+}
+
+.back-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  color: var(--text2);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: .82rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 600;
+}
+.back-btn:hover { border-color: var(--blue); color: var(--blue); }
+
+.topbar-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.25rem;
+  letter-spacing: 1px;
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.player-btns { display: flex; gap: 5px; flex-shrink: 0; }
+
+.pb-btn {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .8rem;
+  padding: 5px 11px;
+  border-radius: 20px;
+  border: 2px solid;
+  cursor: pointer;
+  background: transparent;
+  transition: all .15s;
+  letter-spacing: .5px;
+}
+.pb-btn.nuno { border-color: var(--nuno); color: var(--nuno); }
+.pb-btn.nuno.active { background: var(--nuno); color: #fff; }
+.pb-btn.patri { border-color: var(--patri); color: var(--patri); }
+.pb-btn.patri.active { background: var(--patri); color: #fff; }
+
+.admin-btn {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  opacity: .45;
+  padding: 2px;
+  transition: opacity .15s;
+}
+.admin-btn.active { opacity: 1; }
+
+/* ─── STATS BAR ─── */
+.statsbar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 2px solid var(--border);
+}
+
+.stat-cell {
+  background: var(--surface2);
+  padding: 10px 10px 8px;
+  text-align: center;
+}
+.stat-cell.center { background: var(--surface); }
+
+.stat-name {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .7rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.stat-name.nuno { color: var(--nuno); }
+.stat-name.patri { color: var(--patri); }
+.stat-name.box { color: var(--gold); }
+
+.stat-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.stat-acertos { color: var(--text); }
+.stat-sub {
+  font-size: .68rem;
+  color: var(--muted);
+  margin-top: 3px;
+  font-family: 'Barlow Condensed', sans-serif;
+}
+.stat-sub.owe { color: var(--orange); }
+
+.caixa-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+/* ─── JORNADA TABS ─── */
+.jtabs-wrap {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky;
+  top: 52px;
+  z-index: 90;
+}
+
+.jornada-tabs {
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.jornada-tabs::-webkit-scrollbar { display: none; }
+
+.jtab {
+  flex-shrink: 0;
+  padding: 9px 14px 7px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .9rem;
+  color: var(--muted);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all .15s;
+  position: relative;
+  white-space: nowrap;
+}
+.jtab:hover { color: var(--text2); }
+.jtab.active { color: var(--text); border-bottom-color: var(--blue); }
+.jtab.done { color: var(--text2); }
+.jtab.done.active { border-bottom-color: var(--green); }
+
+.jtab-pip {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+/* ─── JORNADA HEADER ─── */
+.jornada-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px 6px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+.jornada-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.15rem;
+  letter-spacing: 1px;
+}
+.jornada-scoreline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .9rem;
+  color: var(--text2);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.jornada-scoreline .nn { color: var(--nuno); font-weight: 700; font-size: 1rem; }
+.jornada-scoreline .pp { color: var(--patri); font-weight: 700; font-size: 1rem; }
+
+/* ─── GAMES LIST ─── */
+.games-list {
+  padding: 4px 12px max(100px, calc(80px + env(safe-area-inset-bottom)));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.game-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 12px 8px;
+  transition: border-color .15s;
+}
+.game-card.admin-mode { border-color: rgba(249,115,22,.3); }
+
+.game-teams {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.team-home {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .9rem;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.team-away {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .9rem;
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+.vs-sep { font-size: .65rem; color: var(--muted); flex-shrink: 0; }
+
+.game-btns {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
+}
+
+.txb {
+  padding: 9px 0;
+  border-radius: 8px;
+  border: 2px solid var(--border2);
+  background: var(--surface3);
+  color: var(--muted);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+  width: 100%;
+}
+.txb:hover:not(:disabled) { border-color: var(--blue); color: var(--blue); }
+
+/* States */
+.txb.my-pick { border-color: var(--blue); background: var(--blue-dim); color: #a8c4fd; }
+.txb.correct  { border-color: var(--green); background: var(--green-dim); color: #86efac; }
+.txb.wrong    { border-color: var(--border); background: transparent; color: var(--muted); }
+.txb.is-result { border-color: var(--orange); color: var(--orange); }
+.txb.result-neutral { border-color: var(--border2); color: var(--text2); background: var(--surface3); }
+.txb:disabled { cursor: default; }
+
+/* Dots */
+.pick-dots {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  min-height: 8px;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.dot.nuno { background: var(--nuno); }
+.dot.patri { background: var(--patri); }
+
+/* ─── ADMIN BANNER ─── */
+.admin-banner {
+  display: none;
+  background: rgba(249,115,22,.12);
+  border-bottom: 1px solid rgba(249,115,22,.3);
+  text-align: center;
+  padding: 5px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .75rem;
+  letter-spacing: 2px;
+  color: var(--orange);
+}
+.admin-banner.show { display: block; }
+
+/* ─── MODAL ─── */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.72);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.modal.show { display: flex; }
+.modal-box {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-radius: 16px;
+  padding: 24px;
+  width: min(320px, 90vw);
+}
+.modal-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+}
+.modal-input {
+  width: 100%;
+  background: var(--surface3);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 10px 12px;
+  font-family: 'Barlow', sans-serif;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+.modal-input:focus { outline: none; border-color: var(--blue); }
+.modal-err { color: var(--red); font-size: .82rem; margin-bottom: 10px; display: none; }
+.modal-btns { display: flex; gap: 8px; }
+.modal-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  cursor: pointer;
+}
+.modal-btn.ok { background: var(--blue); color: #fff; }
+.modal-btn.cancel { background: var(--surface3); color: var(--text2); }
+
+/* ─── TOAST ─── */
+.toast {
+  position: fixed;
+  bottom: calc(18px + env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  color: var(--text);
+  padding: 9px 20px;
+  border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .95rem;
+  z-index: 300;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; }
+
+/* ─── REGRAS ─── */
+.regras {
+  max-width: 640px;
+  margin: 8px auto 0;
+  padding: 0 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: .78rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.5;
+}
+.regras strong { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="topbar">
+  <button class="back-btn" onclick="location.href='index.html'">← Cromos</button>
+  <div class="topbar-title">⚽ Distrital 25/26</div>
+  <div class="player-btns">
+    <button class="pb-btn nuno" id="pb-nuno" onclick="setPlayer('nuno')">Nuno</button>
+    <button class="pb-btn patri" id="pb-patri" onclick="setPlayer('patricinha')">Patri</button>
+  </div>
+  <button class="admin-btn" id="admin-btn" onclick="toggleAdmin()" title="Admin">🔐</button>
+</div>
+
+<!-- ADMIN BANNER -->
+<div class="admin-banner" id="admin-banner">⚙ MODO ADMIN — INSERIR RESULTADOS</div>
+
+<!-- STATS BAR -->
+<div class="statsbar">
+  <div class="stat-cell">
+    <div class="stat-name nuno">Nuno</div>
+    <div class="stat-val stat-acertos" id="sn-acertos">–</div>
+    <div class="stat-sub owe" id="sn-euro">–</div>
+  </div>
+  <div class="stat-cell center">
+    <div class="stat-name box">💰 Caixa</div>
+    <div class="caixa-val" id="sc-total">€0</div>
+    <div class="stat-sub" id="sc-sub">0/15 jornadas</div>
+  </div>
+  <div class="stat-cell">
+    <div class="stat-name patri">Patricinha</div>
+    <div class="stat-val stat-acertos" id="sp-acertos">–</div>
+    <div class="stat-sub owe" id="sp-euro">–</div>
+  </div>
+</div>
+
+<!-- JORNADA TABS -->
+<div class="jtabs-wrap">
+  <div class="jornada-tabs" id="jtabs"></div>
+</div>
+
+<!-- CONTENT -->
+<div class="regras">
+  <strong>Taxa:</strong> €1/jornada · <strong>Palpite certo:</strong> adversário paga €0,50 à caixa
+</div>
+<div class="jornada-header" id="jornada-header"></div>
+<div class="games-list" id="games-list"></div>
+
+<!-- ADMIN MODAL -->
+<div class="modal" id="admin-modal">
+  <div class="modal-box">
+    <div class="modal-title">🔐 Acesso Admin</div>
+    <input class="modal-input" id="admin-input" type="password" placeholder="Password"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <div class="modal-err" id="admin-err">Password incorreta</div>
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="closeModal()">Cancelar</button>
+      <button class="modal-btn ok" onclick="doLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── FIXTURES ────────────────────────────────────────────────────
+const JORNADAS = [
+  [ // 1ª
+    ['Marinhense','SC Pombal'],['GD Ilha','Alqueidão Serra'],['GC Alcobaça','SCL Marrazes'],
+    ['Vieirense','GD Peniche'],['Boavista','Bombarralense'],['Portomosense','Guiense'],
+    ['U. Pombal','Caldas B'],['Beneditense','SL Marinha'],
+  ],
+  [ // 2ª
+    ['SC Pombal','Beneditense'],['Alqueidão Serra','Marinhense'],['SCL Marrazes','GD Ilha'],
+    ['GD Peniche','GC Alcobaça'],['Bombarralense','Vieirense'],['Guiense','Boavista'],
+    ['Caldas B','Portomosense'],['SL Marinha','U. Pombal'],
+  ],
+  [ // 3ª
+    ['SC Pombal','Alqueidão Serra'],['Marinhense','SCL Marrazes'],['GD Ilha','GD Peniche'],
+    ['GC Alcobaça','Bombarralense'],['Vieirense','Guiense'],['Boavista','Caldas B'],
+    ['Portomosense','SL Marinha'],['Beneditense','U. Pombal'],
+  ],
+  [ // 4ª
+    ['Alqueidão Serra','Beneditense'],['SCL Marrazes','SC Pombal'],['GD Peniche','Marinhense'],
+    ['Bombarralense','GD Ilha'],['Guiense','GC Alcobaça'],['Caldas B','Vieirense'],
+    ['SL Marinha','Boavista'],['U. Pombal','Portomosense'],
+  ],
+  [ // 5ª
+    ['Alqueidão Serra','SCL Marrazes'],['SC Pombal','GD Peniche'],['Marinhense','Bombarralense'],
+    ['GD Ilha','Guiense'],['GC Alcobaça','Caldas B'],['Vieirense','SL Marinha'],
+    ['Boavista','U. Pombal'],['Beneditense','Portomosense'],
+  ],
+  [ // 6ª
+    ['SCL Marrazes','Beneditense'],['GD Peniche','Alqueidão Serra'],['Bombarralense','SC Pombal'],
+    ['Guiense','Marinhense'],['Caldas B','GD Ilha'],['SL Marinha','GC Alcobaça'],
+    ['U. Pombal','Vieirense'],['Portomosense','Boavista'],
+  ],
+  [ // 7ª
+    ['SCL Marrazes','GD Peniche'],['Alqueidão Serra','Bombarralense'],['SC Pombal','Guiense'],
+    ['Marinhense','Caldas B'],['GD Ilha','SL Marinha'],['GC Alcobaça','U. Pombal'],
+    ['Vieirense','Portomosense'],['Beneditense','Boavista'],
+  ],
+  [ // 8ª
+    ['GD Peniche','Beneditense'],['Bombarralense','SCL Marrazes'],['Guiense','Alqueidão Serra'],
+    ['Caldas B','SC Pombal'],['SL Marinha','Marinhense'],['U. Pombal','GD Ilha'],
+    ['Portomosense','GC Alcobaça'],['Boavista','Vieirense'],
+  ],
+  [ // 9ª
+    ['GD Peniche','Bombarralense'],['SCL Marrazes','Guiense'],['Alqueidão Serra','Caldas B'],
+    ['SC Pombal','SL Marinha'],['Marinhense','U. Pombal'],['GD Ilha','Portomosense'],
+    ['GC Alcobaça','Boavista'],['Beneditense','Vieirense'],
+  ],
+  [ // 10ª
+    ['Bombarralense','Beneditense'],['Guiense','GD Peniche'],['Caldas B','SCL Marrazes'],
+    ['SL Marinha','Alqueidão Serra'],['U. Pombal','SC Pombal'],['Portomosense','Marinhense'],
+    ['Boavista','GD Ilha'],['Vieirense','GC Alcobaça'],
+  ],
+  [ // 11ª
+    ['Bombarralense','Guiense'],['GD Peniche','Caldas B'],['SCL Marrazes','SL Marinha'],
+    ['Alqueidão Serra','U. Pombal'],['SC Pombal','Portomosense'],['Marinhense','Boavista'],
+    ['GD Ilha','Vieirense'],['Beneditense','GC Alcobaça'],
+  ],
+  [ // 12ª
+    ['Guiense','Beneditense'],['Caldas B','Bombarralense'],['SL Marinha','GD Peniche'],
+    ['U. Pombal','SCL Marrazes'],['Portomosense','Alqueidão Serra'],['Boavista','SC Pombal'],
+    ['Vieirense','Marinhense'],['GC Alcobaça','GD Ilha'],
+  ],
+  [ // 13ª
+    ['Guiense','Caldas B'],['Bombarralense','SL Marinha'],['GD Peniche','U. Pombal'],
+    ['SCL Marrazes','Portomosense'],['Alqueidão Serra','Boavista'],['SC Pombal','Vieirense'],
+    ['Marinhense','GC Alcobaça'],['Beneditense','GD Ilha'],
+  ],
+  [ // 14ª
+    ['Beneditense','Caldas B'],['SL Marinha','Guiense'],['U. Pombal','Bombarralense'],
+    ['Portomosense','GD Peniche'],['Boavista','SCL Marrazes'],['Vieirense','Alqueidão Serra'],
+    ['GC Alcobaça','SC Pombal'],['GD Ilha','Marinhense'],
+  ],
+  [ // 15ª
+    ['Caldas B','SL Marinha'],['Guiense','U. Pombal'],['Bombarralense','Portomosense'],
+    ['GD Peniche','Boavista'],['SCL Marrazes','Vieirense'],['Alqueidão Serra','GC Alcobaça'],
+    ['SC Pombal','GD Ilha'],['Marinhense','Beneditense'],
+  ],
+];
+
+const ORDINALS = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11ª','12ª','13ª','14ª','15ª'];
+
+// ─── CONFIG ──────────────────────────────────────────────────────
+const SUPABASE_URL   = 'https://dxqxmqckwlsfjazccnvx.supabase.co';
+const SUPABASE_KEY   = 'sb_publishable_68nnKwJmrJj7ECgsmhQ58A_L4CYbDg_';
+const ADMIN_PASSWORD = 'mundial2026';
+const TAXA           = 1.00;
+const PENALIDADE     = 0.50;
+
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ─── STATE ───────────────────────────────────────────────────────
+let player    = localStorage.getItem('dist_player') || 'nuno';
+let jornada   = 0;
+let adminMode = false;
+let picks  = { nuno: {}, patricinha: {} };  // key: `${j}_${g}` → '1'|'X'|'2'
+let results = {};                            // key: `${j}_${g}` → '1'|'X'|'2'
+
+// ─── LOAD ────────────────────────────────────────────────────────
+async function loadData() {
+  const [{ data: pd }, { data: rd }] = await Promise.all([
+    sb.from('dist_palpites').select('*'),
+    sb.from('dist_resultados').select('*'),
+  ]);
+  picks = { nuno: {}, patricinha: {} };
+  (pd || []).forEach(p => {
+    if (!picks[p.player]) picks[p.player] = {};
+    picks[p.player][`${p.jornada}_${p.game_idx}`] = p.palpite;
+  });
+  results = {};
+  (rd || []).forEach(r => { results[`${r.jornada}_${r.game_idx}`] = r.resultado; });
+  render();
+}
+
+// ─── SAVE PICK ───────────────────────────────────────────────────
+async function savePick(j, g, opt) {
+  const key = `${j}_${g}`;
+  if (results[key]) return; // locked once result entered
+  if (!picks[player]) picks[player] = {};
+
+  if (picks[player][key] === opt) {
+    // Toggle off
+    delete picks[player][key];
+    renderGames();
+    updateStats();
+    await sb.from('dist_palpites').delete()
+      .eq('player', player).eq('jornada', j).eq('game_idx', g);
+    return;
+  }
+  picks[player][key] = opt;
+  renderGames();
+  updateStats();
+  const { error } = await sb.from('dist_palpites')
+    .upsert({ player, jornada: j, game_idx: g, palpite: opt },
+             { onConflict: 'player,jornada,game_idx' });
+  if (error) showToast('Erro ao guardar');
+}
+
+// ─── SAVE RESULT (admin) ─────────────────────────────────────────
+async function saveResult(j, g, opt) {
+  const key = `${j}_${g}`;
+  if (results[key] === opt) {
+    // Toggle off
+    delete results[key];
+    renderGames();
+    updateStats();
+    renderTabs();
+    await sb.from('dist_resultados').delete().eq('jornada', j).eq('game_idx', g);
+    return;
+  }
+  results[key] = opt;
+  renderGames();
+  updateStats();
+  renderTabs();
+  const { error } = await sb.from('dist_resultados')
+    .upsert({ jornada: j, game_idx: g, resultado: opt },
+             { onConflict: 'jornada,game_idx' });
+  if (error) showToast('Erro ao guardar resultado');
+}
+
+// ─── STATS ───────────────────────────────────────────────────────
+function calcStats() {
+  let nAcertos = 0, pAcertos = 0;
+  const jornadasComRes = new Set();
+
+  JORNADAS.forEach((games, ji) => {
+    games.forEach((_, gi) => {
+      const key = `${ji}_${gi}`;
+      const res = results[key];
+      if (!res) return;
+      jornadasComRes.add(ji);
+      if (picks.nuno[key] === res) nAcertos++;
+      if (picks.patricinha[key] === res) pAcertos++;
+    });
+  });
+
+  const nJ = jornadasComRes.size;
+  const nunoPaga  = nJ * TAXA + pAcertos * PENALIDADE;
+  const patriPaga = nJ * TAXA + nAcertos * PENALIDADE;
+  return { nAcertos, pAcertos, nunoPaga, patriPaga, caixa: nunoPaga + patriPaga, nJ };
+}
+
+function jornadaStats(ji) {
+  let nA = 0, pA = 0, nRes = 0;
+  JORNADAS[ji].forEach((_, gi) => {
+    const key = `${ji}_${gi}`;
+    const res = results[key];
+    if (!res) return;
+    nRes++;
+    if (picks.nuno[key] === res) nA++;
+    if (picks.patricinha[key] === res) pA++;
+  });
+  return { nA, pA, nRes };
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────
+function render() { renderTabs(); renderGames(); updateStats(); }
+
+function updateStats() {
+  const { nAcertos, pAcertos, nunoPaga, patriPaga, caixa, nJ } = calcStats();
+  document.getElementById('sn-acertos').textContent = nAcertos;
+  document.getElementById('sn-euro').textContent    = `€${nunoPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('sp-acertos').textContent = pAcertos;
+  document.getElementById('sp-euro').textContent    = `€${patriPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('sc-total').textContent   = `€${caixa.toFixed(2)}`;
+  document.getElementById('sc-sub').textContent     = `${nJ}/15 jornadas`;
+}
+
+function renderTabs() {
+  document.getElementById('jtabs').innerHTML = JORNADAS.map((games, ji) => {
+    const hasPick = games.some((_, gi) => picks[player]?.[`${ji}_${gi}`]);
+    const hasRes  = games.some((_, gi) => results[`${ji}_${gi}`]);
+    let cls = 'jtab';
+    if (ji === jornada) cls += ' active';
+    if (hasRes) cls += ' done';
+    const pip = hasPick
+      ? `<span class="jtab-pip" style="background:${player==='nuno'?'var(--nuno)':'var(--patri)'}"></span>`
+      : '';
+    return `<div class="${cls}" onclick="setJornada(${ji})">${ORDINALS[ji]}${pip}</div>`;
+  }).join('');
+  const active = document.getElementById('jtabs').children[jornada];
+  if (active) active.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+}
+
+function renderGames() {
+  const games  = JORNADAS[jornada];
+  const ji     = jornada;
+  const other  = player === 'nuno' ? 'patricinha' : 'nuno';
+  const myClr  = player === 'nuno' ? 'nuno' : 'patri';
+  const othClr = player === 'nuno' ? 'patri' : 'nuno';
+  const { nA, pA, nRes } = jornadaStats(ji);
+
+  // Header
+  let scoreHTML = '';
+  if (nRes > 0) {
+    scoreHTML = `<div class="jornada-scoreline">
+      <span class="nn">${nA}</span> – <span class="pp">${pA}</span>
+      <span style="color:var(--muted);font-size:.75rem">(${nRes}/8)</span>
+    </div>`;
+  }
+  document.getElementById('jornada-header').innerHTML =
+    `<div class="jornada-title">${ORDINALS[ji]} Jornada</div>${scoreHTML}`;
+
+  // Games
+  document.getElementById('games-list').innerHTML = games.map(([home, away], gi) => {
+    const key    = `${ji}_${gi}`;
+    const myPick = picks[player]?.[key];
+    const othPick= picks[other]?.[key];
+    const res    = results[key];
+
+    const btns = ['1','X','2'].map(opt => {
+      let cls = 'txb';
+      let onclick = '';
+
+      if (adminMode) {
+        if (res === opt) cls += ' is-result';
+        else cls += ' result-neutral';
+        onclick = `saveResult(${ji},${gi},'${opt}')`;
+      } else {
+        const isMy  = myPick === opt;
+        const isOth = othPick === opt;
+        if (res) {
+          if (opt === res) { cls += isMy ? ' correct' : ' is-result'; }
+          else             { cls += isMy ? ' wrong' : ''; }
+          // locked — no onclick
+        } else {
+          if (isMy) cls += ' my-pick';
+          onclick = `savePick(${ji},${gi},'${opt}')`;
+        }
+
+        const myDot  = isMy  ? `<div class="dot ${myClr}"></div>` : '';
+        const othDot = isOth ? `<div class="dot ${othClr}"></div>` : '';
+        const dots = `<div class="pick-dots">${myDot}${othDot}</div>`;
+
+        return `<div class="btn-wrap">
+          <button class="${cls}" ${onclick?`onclick="${onclick}"`:'disabled'}>${opt}</button>
+          ${dots}
+        </div>`;
+      }
+
+      return `<div class="btn-wrap">
+        <button class="${cls}" onclick="${onclick}">${opt}</button>
+      </div>`;
+    }).join('');
+
+    return `<div class="game-card${adminMode?' admin-mode':''}">
+      <div class="game-teams">
+        <div class="team-home">${home}</div>
+        <div class="vs-sep">vs</div>
+        <div class="team-away">${away}</div>
+      </div>
+      <div class="game-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── CONTROLS ────────────────────────────────────────────────────
+function setPlayer(p) {
+  player = p;
+  localStorage.setItem('dist_player', p);
+  document.getElementById('pb-nuno').classList.toggle('active', p === 'nuno');
+  document.getElementById('pb-patri').classList.toggle('active', p === 'patricinha');
+  renderTabs();
+  renderGames();
+}
+
+function setJornada(ji) {
+  jornada = ji;
+  renderTabs();
+  renderGames();
+}
+
+// ─── ADMIN ───────────────────────────────────────────────────────
+function toggleAdmin() {
+  if (adminMode) { exitAdmin(); return; }
+  document.getElementById('admin-modal').classList.add('show');
+  setTimeout(() => document.getElementById('admin-input').focus(), 60);
+}
+
+function closeModal() {
+  document.getElementById('admin-modal').classList.remove('show');
+  document.getElementById('admin-input').value = '';
+  document.getElementById('admin-err').style.display = 'none';
+}
+
+function doLogin() {
+  if (document.getElementById('admin-input').value === ADMIN_PASSWORD) {
+    adminMode = true;
+    document.getElementById('admin-btn').classList.add('active');
+    document.getElementById('admin-banner').classList.add('show');
+    closeModal();
+    renderGames();
+    showToast('Modo admin ativo');
+  } else {
+    document.getElementById('admin-err').style.display = 'block';
+  }
+}
+
+function exitAdmin() {
+  adminMode = false;
+  document.getElementById('admin-btn').classList.remove('active');
+  document.getElementById('admin-banner').classList.remove('show');
+  renderGames();
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── INIT ────────────────────────────────────────────────────────
+setPlayer(player);
+loadData();
+</script>
+</body>
+</html>
