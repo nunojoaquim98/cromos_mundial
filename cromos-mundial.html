@@ -812,7 +812,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
   <div class="dist-jtabs-wrap">
     <div class="dist-jtabs" id="dist-jtabs"></div>
   </div>
-  <div class="dist-regras"><strong>Taxa:</strong> €1/jornada · <strong>Acerto:</strong> adversário paga €0,50 · <strong>Perfeita:</strong> adversário paga €20 bónus</div>
+  <div class="dist-regras"><strong>Perfeita (8/8):</strong> adversário paga €20 à caixa</div>
   <div class="dist-jh" id="dist-jh"></div>
   <div id="dist-pago-panel"></div>
   <div class="dist-games" id="dist-games"></div>
@@ -2375,8 +2375,7 @@ const D_JORNADAS = [
 
 const D_ORD = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11ª','12ª','13ª','14ª','15ª',
                '16ª','17ª','18ª','19ª','20ª','21ª','22ª','23ª','24ª','25ª','26ª','27ª','28ª','29ª','30ª'];
-const D_TAXA = 1.00;
-const D_PEN  = 0.50;
+const D_PERFEITA = 20.00;
 
 let dPlayer     = localStorage.getItem('dist_player') || 'nuno';
 let dJornada    = 0;
@@ -2445,12 +2444,10 @@ function dJornadaStats(ji) {
     if (dPicks.patricinha[`${ji}_${gi}`] === res) pA++;
   });
   const allDone = nR === total;
-  const nPerfeita = allDone && nA === total; // Nuno acertou tudo → Patri paga bónus
-  const pPerfeita = allDone && pA === total; // Patri acertou tudo → Nuno paga bónus
-  // O que cada um deve nesta jornada
-  const taxa = nR > 0 ? D_TAXA : 0;
-  const patriDeve = taxa + nA * D_PEN + (nPerfeita ? 20 : 0); // Patri paga pelos acertos do Nuno
-  const nunoDeve  = taxa + pA * D_PEN + (pPerfeita ? 20 : 0); // Nuno paga pelos acertos da Patri
+  const nPerfeita = allDone && nA === total; // Nuno acertou tudo → Patri paga €20
+  const pPerfeita = allDone && pA === total; // Patri acertou tudo → Nuno paga €20
+  const patriDeve = nPerfeita ? D_PERFEITA : 0;
+  const nunoDeve  = pPerfeita ? D_PERFEITA : 0;
   return { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve };
 }
 
@@ -2474,9 +2471,9 @@ function dRender() { dRenderTabs(); dRenderGames(); dUpdateStats(); }
 function dUpdateStats() {
   const { nA, pA, nunoDeve, patriDeve, caixa, nJ } = dCalcStats();
   document.getElementById('dsn-ac').textContent = nA;
-  document.getElementById('dsn-eu').textContent = `Patri deve €${patriDeve.toFixed(2)}`;
+  document.getElementById('dsn-eu').textContent = patriDeve > 0 ? `Patri deve €${patriDeve.toFixed(0)}` : 'Patri deve €0';
   document.getElementById('dsp-ac').textContent = pA;
-  document.getElementById('dsp-eu').textContent = `Nuno deve €${nunoDeve.toFixed(2)}`;
+  document.getElementById('dsp-eu').textContent = nunoDeve > 0 ? `Nuno deve €${nunoDeve.toFixed(0)}` : 'Nuno deve €0';
   document.getElementById('dsc-tot').textContent = `€${caixa.toFixed(2)}`;
   document.getElementById('dsc-sub').textContent = `${nJ}/30 jornadas`;
 }
@@ -2525,16 +2522,16 @@ function dRenderGames() {
       : '';
     pagoPanel = `<div class="dist-pago-panel">
       <div class="dist-pago-row">
-        <span class="dist-pago-lbl">Nuno acertou ${nA}/8 → Patri paga</span>
-        <span class="dist-pago-val pp">€${patriDeve.toFixed(2)}</span>
+        <span class="dist-pago-lbl">Nuno acertou</span>
+        <span class="dist-pago-val nn">${nA}/8${nPerfeita ? ' 🌟' : ''}</span>
       </div>
       <div class="dist-pago-row">
-        <span class="dist-pago-lbl">Patri acertou ${pA}/8 → Nuno paga</span>
-        <span class="dist-pago-val nn">€${nunoDeve.toFixed(2)}</span>
+        <span class="dist-pago-lbl">Patri acertou</span>
+        <span class="dist-pago-val pp">${pA}/8${pPerfeita ? ' 🌟' : ''}</span>
       </div>
       <div class="dist-pago-row">
-        <span class="dist-pago-lbl">Total jornada</span>
-        <span class="dist-pago-val total">€${(patriDeve + nunoDeve).toFixed(2)}</span>
+        <span class="dist-pago-lbl">Total a pagar</span>
+        <span class="dist-pago-val total">€${(patriDeve + nunoDeve).toFixed(0)}</span>
       </div>
       ${perfHTML}
       <button class="dist-pago-btn${pago ? ' pago' : ''}" onclick="dTogglePago(${ji})">
