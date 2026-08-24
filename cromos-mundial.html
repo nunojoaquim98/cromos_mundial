@@ -380,6 +380,8 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .landing-card-title{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:.1em}
 .landing-card.cromos .landing-card-title{color:var(--gold)}
 .landing-card.totobola .landing-card-title{color:var(--purple)}
+.landing-card.distrital:hover{border-color:#f97316}
+.landing-card.distrital .landing-card-title{color:#f97316}
 .landing-card-desc{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);text-align:center}
 
 /* ─── LOGIN ─── */
@@ -568,6 +570,65 @@ body.light .jpts.p0 { background: #f1f5f9; }
   transition: all 0.15s; flex-shrink: 0;
 }
 .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
+/* ─── DISTRITAL ─── */
+#view-distrital{display:flex;flex-direction:column;min-height:100dvh}
+.dist-statsbar{display:grid;grid-template-columns:1fr auto 1fr;gap:1px;background:var(--border);border-bottom:2px solid var(--border)}
+.dist-stat{background:var(--surface2);padding:10px 10px 8px;text-align:center}
+.dist-stat.mid{background:var(--surface)}
+.dist-sname{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:3px}
+.dist-sname.nn{color:var(--nuno)}
+.dist-sname.pp{color:var(--patri)}
+.dist-sname.bx{color:var(--gold)}
+.dist-sval{font-family:'Bebas Neue',sans-serif;font-size:1.35rem;line-height:1}
+.dist-ssub{font-size:.68rem;color:var(--muted);margin-top:3px;font-family:'Barlow Condensed',sans-serif}
+.dist-ssub.owe{color:#f97316}
+.dist-caixa{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;color:var(--gold);line-height:1}
+.dist-jtabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:90}
+.dist-jtabs{display:flex;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
+.dist-jtabs::-webkit-scrollbar{display:none}
+.dist-jtab{flex-shrink:0;padding:9px 13px 7px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;color:var(--muted);cursor:pointer;border-bottom:3px solid transparent;transition:all .15s;position:relative;white-space:nowrap}
+.dist-jtab:hover{color:var(--text2)}
+.dist-jtab.active{color:var(--text);border-bottom-color:var(--blue)}
+.dist-jtab.done{color:var(--text2)}
+.dist-jtab.done.active{border-bottom-color:var(--green)}
+.dist-jtab-pip{position:absolute;top:5px;right:4px;width:5px;height:5px;border-radius:50%}
+.dist-jh{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px;max-width:640px;margin:0 auto}
+.dist-jh-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px}
+.dist-jh-score{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.dist-jh-score .nn{color:var(--nuno);font-weight:700;font-size:.95rem}
+.dist-jh-score .pp{color:var(--patri);font-weight:700;font-size:.95rem}
+.dist-player-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 0;max-width:640px;margin:0 auto}
+.dist-pbtns{display:flex;gap:6px}
+.dist-pb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;padding:5px 12px;border-radius:20px;border:2px solid;cursor:pointer;background:transparent;transition:all .15s;letter-spacing:.5px}
+.dist-pb.nn{border-color:var(--nuno);color:var(--nuno)}
+.dist-pb.nn.active{background:var(--nuno);color:#fff}
+.dist-pb.pp{border-color:var(--patri);color:var(--patri)}
+.dist-pb.pp.active{background:var(--patri);color:#fff}
+.dist-admin-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.dist-admin-btn.active{border-color:#f97316;color:#f97316}
+.dist-regras{max-width:640px;margin:4px auto 0;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--muted);text-align:center}
+.dist-regras strong{color:var(--text2)}
+.dist-games{padding:4px 12px max(100px,calc(80px + env(safe-area-inset-bottom)));display:flex;flex-direction:column;gap:7px;max-width:640px;margin:0 auto}
+.dist-card{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:9px 12px 7px;transition:border-color .15s}
+.dist-card.adm{border-color:rgba(249,115,22,.35)}
+.dist-teams{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.dist-th,.dist-ta{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.88rem;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dist-ta{text-align:right}
+.dist-vs{font-size:.62rem;color:var(--muted);flex-shrink:0}
+.dist-btns{display:flex;gap:5px}
+.dist-bwrap{flex:1;display:flex;flex-direction:column;align-items:stretch;gap:3px}
+.dist-txb{padding:8px 0;border-radius:7px;border:2px solid var(--border2);background:var(--surface3);color:var(--muted);font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:1px;cursor:pointer;transition:all .15s;text-align:center;width:100%}
+.dist-txb:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.dist-txb.my-pick{border-color:var(--blue);background:#0e2550;color:#a8c4fd}
+.dist-txb.correct{border-color:var(--green);background:#0a2818;color:#86efac}
+.dist-txb.wrong{border-color:var(--border);background:transparent;color:var(--muted)}
+.dist-txb.is-result{border-color:#f97316;color:#f97316}
+.dist-txb.res-neutral{border-color:var(--border2);color:var(--text2);background:var(--surface3)}
+.dist-txb:disabled{cursor:default}
+.dist-dots{display:flex;justify-content:center;align-items:center;gap:3px;min-height:7px}
+.dist-dot{width:6px;height:6px;border-radius:50%}
+.dist-dot.nn{background:var(--nuno)}
+.dist-dot.pp{background:var(--patri)}
 </style>
 </head>
 <body>
@@ -610,6 +671,11 @@ body.light .jpts.p0 { background: #f1f5f9; }
         <div class="landing-card-title">Totobola</div>
         <div class="landing-card-desc">Apostas & ranking</div>
       </div>
+      <div class="landing-card distrital" onclick="openDistrital()">
+        <div class="landing-card-icon">⚽</div>
+        <div class="landing-card-title">Distrital</div>
+        <div class="landing-card-desc">Divisão de Honra 25/26</div>
+      </div>
     </div>
   </div>
 </div>
@@ -645,7 +711,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
     <button class="filter-btn" onclick="exportFaltam()" title="Exportar cromos que faltam por seleção">📋 Faltam</button>
     <button class="filter-btn" onclick="exportRepetidos()" title="Exportar lista de repetidos">📋 Repetidos</button>
     <button class="filter-btn" onclick="openTrocasModal()" title="Ver o que precisas de uma lista de trocas">🔄 Trocas</button>
-    <button class="filter-btn" onclick="location.href='distrital.html'" title="Totobola Distrital 25/26" style="border-color:#f97316;color:#f97316">⚽ Distrital</button>
+    <button class="filter-btn" onclick="openDistrital()" title="Totobola Distrital 25/26" style="border-color:#f97316;color:#f97316">⚽ Distrital</button>
   </div>
   <main>
     <div class="sec-head">🌍 Países <small id="c-count"></small></div>
@@ -699,6 +765,40 @@ body.light .jpts.p0 { background: #f1f5f9; }
 </div>
 
 <!-- ═══ VIEW: DETAIL ═══ -->
+<!-- ═══ VIEW: DISTRITAL ═══ -->
+<div class="view" id="view-distrital">
+  <div class="dist-statsbar">
+    <div class="dist-stat">
+      <div class="dist-sname nn">Nuno</div>
+      <div class="dist-sval" id="dsn-ac">–</div>
+      <div class="dist-ssub owe" id="dsn-eu">–</div>
+    </div>
+    <div class="dist-stat mid">
+      <div class="dist-sname bx">💰 Caixa</div>
+      <div class="dist-caixa" id="dsc-tot">€0</div>
+      <div class="dist-ssub" id="dsc-sub">0/30 jornadas</div>
+    </div>
+    <div class="dist-stat">
+      <div class="dist-sname pp">Patricinha</div>
+      <div class="dist-sval" id="dsp-ac">–</div>
+      <div class="dist-ssub owe" id="dsp-eu">–</div>
+    </div>
+  </div>
+  <div class="dist-player-bar">
+    <div class="dist-pbtns">
+      <button class="dist-pb nn" id="dpb-nuno" onclick="dSetPlayer('nuno')">Nuno</button>
+      <button class="dist-pb pp" id="dpb-patri" onclick="dSetPlayer('patricinha')">Patri</button>
+    </div>
+    <button class="dist-admin-btn" id="dist-adm-btn" onclick="dToggleAdmin()">⚙ Admin</button>
+  </div>
+  <div class="dist-jtabs-wrap">
+    <div class="dist-jtabs" id="dist-jtabs"></div>
+  </div>
+  <div class="dist-regras"><strong>Taxa:</strong> €1/jornada · <strong>Palpite certo:</strong> adversário paga €0,50 à caixa</div>
+  <div class="dist-jh" id="dist-jh"></div>
+  <div class="dist-games" id="dist-games"></div>
+</div>
+
 <div class="view" id="view-detail">
   <div class="detail-hero" id="detail-hero"></div>
   <div class="detail-actions">
@@ -963,6 +1063,7 @@ function goHome() {
   currentItem = null;
   document.getElementById('view-bolao').classList.remove('active');
   document.getElementById('view-home').classList.remove('active');
+  document.getElementById('view-distrital').classList.remove('active');
   document.getElementById('view-landing').classList.add('active');
   document.getElementById('app-header').style.display = 'none';
   document.getElementById('app-progbar').style.display = 'none';
@@ -2097,6 +2198,16 @@ function openBolaoFromLanding() {
   document.getElementById('header-stats').style.display = 'none';
   openBolao();
 }
+function openDistrital() {
+  ['view-landing','view-home','view-bolao','view-detail'].forEach(v =>
+    document.getElementById(v).classList.remove('active'));
+  document.getElementById('app-header').style.display = 'flex';
+  document.getElementById('app-progbar').style.display = 'none';
+  document.getElementById('back-btn').style.display = 'flex';
+  document.getElementById('header-stats').style.display = 'none';
+  document.getElementById('view-distrital').classList.add('active');
+  dInit();
+}
 
 function togglePw() {
   const input = document.getElementById('login-pw');
@@ -2109,6 +2220,7 @@ function doLogout() {
   localStorage.removeItem('mundial_auth');
   document.getElementById('view-home').classList.remove('active');
   document.getElementById('view-detail').classList.remove('active');
+  document.getElementById('view-distrital').classList.remove('active');
   document.getElementById('app-header').style.display = 'none';
   document.getElementById('app-progbar').style.display = 'none';
   document.getElementById('view-login').classList.add('active');
@@ -2216,6 +2328,223 @@ if (localStorage.getItem('mundial_auth') === '1') {
 // Restore admin session
 if (localStorage.getItem('mundial_admin') === '1') {
   adminMode = true;
+}
+
+// ─── DISTRITAL ─────────────────────────────────────────────────
+const D_JORNADAS_1 = [
+  [['Marinhense','SC Pombal'],['GD Ilha','Alqueidão Serra'],['GC Alcobaça','SCL Marrazes'],['Vieirense','GD Peniche'],['Boavista','Bombarralense'],['Portomosense','Guiense'],['U. Pombal','Caldas B'],['Beneditense','SL Marinha']],
+  [['SC Pombal','Beneditense'],['Alqueidão Serra','Marinhense'],['SCL Marrazes','GD Ilha'],['GD Peniche','GC Alcobaça'],['Bombarralense','Vieirense'],['Guiense','Boavista'],['Caldas B','Portomosense'],['SL Marinha','U. Pombal']],
+  [['SC Pombal','Alqueidão Serra'],['Marinhense','SCL Marrazes'],['GD Ilha','GD Peniche'],['GC Alcobaça','Bombarralense'],['Vieirense','Guiense'],['Boavista','Caldas B'],['Portomosense','SL Marinha'],['Beneditense','U. Pombal']],
+  [['Alqueidão Serra','Beneditense'],['SCL Marrazes','SC Pombal'],['GD Peniche','Marinhense'],['Bombarralense','GD Ilha'],['Guiense','GC Alcobaça'],['Caldas B','Vieirense'],['SL Marinha','Boavista'],['U. Pombal','Portomosense']],
+  [['Alqueidão Serra','SCL Marrazes'],['SC Pombal','GD Peniche'],['Marinhense','Bombarralense'],['GD Ilha','Guiense'],['GC Alcobaça','Caldas B'],['Vieirense','SL Marinha'],['Boavista','U. Pombal'],['Beneditense','Portomosense']],
+  [['SCL Marrazes','Beneditense'],['GD Peniche','Alqueidão Serra'],['Bombarralense','SC Pombal'],['Guiense','Marinhense'],['Caldas B','GD Ilha'],['SL Marinha','GC Alcobaça'],['U. Pombal','Vieirense'],['Portomosense','Boavista']],
+  [['SCL Marrazes','GD Peniche'],['Alqueidão Serra','Bombarralense'],['SC Pombal','Guiense'],['Marinhense','Caldas B'],['GD Ilha','SL Marinha'],['GC Alcobaça','U. Pombal'],['Vieirense','Portomosense'],['Beneditense','Boavista']],
+  [['GD Peniche','Beneditense'],['Bombarralense','SCL Marrazes'],['Guiense','Alqueidão Serra'],['Caldas B','SC Pombal'],['SL Marinha','Marinhense'],['U. Pombal','GD Ilha'],['Portomosense','GC Alcobaça'],['Boavista','Vieirense']],
+  [['GD Peniche','Bombarralense'],['SCL Marrazes','Guiense'],['Alqueidão Serra','Caldas B'],['SC Pombal','SL Marinha'],['Marinhense','U. Pombal'],['GD Ilha','Portomosense'],['GC Alcobaça','Boavista'],['Beneditense','Vieirense']],
+  [['Bombarralense','Beneditense'],['Guiense','GD Peniche'],['Caldas B','SCL Marrazes'],['SL Marinha','Alqueidão Serra'],['U. Pombal','SC Pombal'],['Portomosense','Marinhense'],['Boavista','GD Ilha'],['Vieirense','GC Alcobaça']],
+  [['Bombarralense','Guiense'],['GD Peniche','Caldas B'],['SCL Marrazes','SL Marinha'],['Alqueidão Serra','U. Pombal'],['SC Pombal','Portomosense'],['Marinhense','Boavista'],['GD Ilha','Vieirense'],['Beneditense','GC Alcobaça']],
+  [['Guiense','Beneditense'],['Caldas B','Bombarralense'],['SL Marinha','GD Peniche'],['U. Pombal','SCL Marrazes'],['Portomosense','Alqueidão Serra'],['Boavista','SC Pombal'],['Vieirense','Marinhense'],['GC Alcobaça','GD Ilha']],
+  [['Guiense','Caldas B'],['Bombarralense','SL Marinha'],['GD Peniche','U. Pombal'],['SCL Marrazes','Portomosense'],['Alqueidão Serra','Boavista'],['SC Pombal','Vieirense'],['Marinhense','GC Alcobaça'],['Beneditense','GD Ilha']],
+  [['Beneditense','Caldas B'],['SL Marinha','Guiense'],['U. Pombal','Bombarralense'],['Portomosense','GD Peniche'],['Boavista','SCL Marrazes'],['Vieirense','Alqueidão Serra'],['GC Alcobaça','SC Pombal'],['GD Ilha','Marinhense']],
+  [['Caldas B','SL Marinha'],['Guiense','U. Pombal'],['Bombarralense','Portomosense'],['GD Peniche','Boavista'],['SCL Marrazes','Vieirense'],['Alqueidão Serra','GC Alcobaça'],['SC Pombal','GD Ilha'],['Marinhense','Beneditense']],
+];
+// 2ª volta = fixtures invertidos (casa↔fora)
+const D_JORNADAS = [
+  ...D_JORNADAS_1,
+  ...D_JORNADAS_1.map(j => j.map(([h, a]) => [a, h])),
+];
+
+const D_ORD = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11ª','12ª','13ª','14ª','15ª',
+               '16ª','17ª','18ª','19ª','20ª','21ª','22ª','23ª','24ª','25ª','26ª','27ª','28ª','29ª','30ª'];
+const D_TAXA = 1.00;
+const D_PEN  = 0.50;
+
+let dPlayer  = localStorage.getItem('dist_player') || 'nuno';
+let dJornada = 0;
+let dAdmin   = false;
+let dPicks   = { nuno: {}, patricinha: {} };
+let dResults = {};
+let dLoaded  = false;
+
+async function dLoadData() {
+  const [{ data: pd }, { data: rd }] = await Promise.all([
+    sb.from('dist_palpites').select('*'),
+    sb.from('dist_resultados').select('*'),
+  ]);
+  dPicks = { nuno: {}, patricinha: {} };
+  (pd || []).forEach(p => {
+    if (!dPicks[p.player]) dPicks[p.player] = {};
+    dPicks[p.player][`${p.jornada}_${p.game_idx}`] = p.palpite;
+  });
+  dResults = {};
+  (rd || []).forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
+  dRender();
+}
+
+async function dSavePick(j, g, opt) {
+  const key = `${j}_${g}`;
+  if (dResults[key]) return;
+  if (!dPicks[dPlayer]) dPicks[dPlayer] = {};
+  if (dPicks[dPlayer][key] === opt) {
+    delete dPicks[dPlayer][key];
+    dRenderGames(); dUpdateStats();
+    await sb.from('dist_palpites').delete().eq('player',dPlayer).eq('jornada',j).eq('game_idx',g);
+    return;
+  }
+  dPicks[dPlayer][key] = opt;
+  dRenderGames(); dUpdateStats();
+  await sb.from('dist_palpites').upsert({ player:dPlayer, jornada:j, game_idx:g, palpite:opt },
+    { onConflict:'player,jornada,game_idx' });
+}
+
+async function dSaveResult(j, g, opt) {
+  const key = `${j}_${g}`;
+  if (dResults[key] === opt) {
+    delete dResults[key];
+    dRenderGames(); dUpdateStats(); dRenderTabs();
+    await sb.from('dist_resultados').delete().eq('jornada',j).eq('game_idx',g);
+    return;
+  }
+  dResults[key] = opt;
+  dRenderGames(); dUpdateStats(); dRenderTabs();
+  await sb.from('dist_resultados').upsert({ jornada:j, game_idx:g, resultado:opt },
+    { onConflict:'jornada,game_idx' });
+}
+
+function dCalcStats() {
+  let nA = 0, pA = 0;
+  const jorns = new Set();
+  D_JORNADAS.forEach((games, ji) => {
+    games.forEach((_, gi) => {
+      const key = `${ji}_${gi}`, res = dResults[key];
+      if (!res) return;
+      jorns.add(ji);
+      if (dPicks.nuno[key] === res) nA++;
+      if (dPicks.patricinha[key] === res) pA++;
+    });
+  });
+  const nJ = jorns.size;
+  const nPaga = nJ * D_TAXA + pA * D_PEN;
+  const pPaga = nJ * D_TAXA + nA * D_PEN;
+  return { nA, pA, nPaga, pPaga, caixa: nPaga + pPaga, nJ };
+}
+
+function dJornadaStats(ji) {
+  let nA = 0, pA = 0, nR = 0;
+  D_JORNADAS[ji].forEach((_, gi) => {
+    const res = dResults[`${ji}_${gi}`];
+    if (!res) return;
+    nR++;
+    if (dPicks.nuno[`${ji}_${gi}`] === res) nA++;
+    if (dPicks.patricinha[`${ji}_${gi}`] === res) pA++;
+  });
+  return { nA, pA, nR };
+}
+
+function dRender() { dRenderTabs(); dRenderGames(); dUpdateStats(); }
+
+function dUpdateStats() {
+  const { nA, pA, nPaga, pPaga, caixa, nJ } = dCalcStats();
+  document.getElementById('dsn-ac').textContent = nA;
+  document.getElementById('dsn-eu').textContent = `€${nPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('dsp-ac').textContent = pA;
+  document.getElementById('dsp-eu').textContent = `€${pPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('dsc-tot').textContent = `€${caixa.toFixed(2)}`;
+  document.getElementById('dsc-sub').textContent = `${nJ}/30 jornadas`;
+}
+
+function dRenderTabs() {
+  document.getElementById('dist-jtabs').innerHTML = D_JORNADAS.map((games, ji) => {
+    const hasPick = games.some((_, gi) => dPicks[dPlayer]?.[`${ji}_${gi}`]);
+    const hasRes  = games.some((_, gi) => dResults[`${ji}_${gi}`]);
+    let cls = 'dist-jtab' + (ji === dJornada ? ' active' : '') + (hasRes ? ' done' : '');
+    const pip = hasPick
+      ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--nuno)':'var(--patri)'}"></span>`
+      : '';
+    return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pip}</div>`;
+  }).join('');
+  const el = document.getElementById('dist-jtabs').children[dJornada];
+  if (el) el.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
+}
+
+function dRenderGames() {
+  const ji = dJornada;
+  const games = D_JORNADAS[ji];
+  const other = dPlayer === 'nuno' ? 'patricinha' : 'nuno';
+  const myC   = dPlayer === 'nuno' ? 'nn' : 'pp';
+  const othC  = dPlayer === 'nuno' ? 'pp' : 'nn';
+  const { nA, pA, nR } = dJornadaStats(ji);
+
+  let scoreHTML = nR > 0
+    ? `<div class="dist-jh-score"><span class="nn">${nA}</span>–<span class="pp">${pA}</span><span style="color:var(--muted);font-size:.72rem">(${nR}/8)</span></div>`
+    : '';
+  document.getElementById('dist-jh').innerHTML =
+    `<div class="dist-jh-title">${D_ORD[ji]} Jornada</div>${scoreHTML}`;
+
+  document.getElementById('dist-games').innerHTML = games.map(([home, away], gi) => {
+    const key = `${ji}_${gi}`;
+    const myP = dPicks[dPlayer]?.[key];
+    const othP = dPicks[other]?.[key];
+    const res = dResults[key];
+
+    const btns = ['1','X','2'].map(opt => {
+      let cls = 'dist-txb';
+      let oc = '';
+      let dots = '';
+
+      if (dAdmin) {
+        cls += res === opt ? ' is-result' : ' res-neutral';
+        oc = `dSaveResult(${ji},${gi},'${opt}')`;
+        return `<div class="dist-bwrap"><button class="${cls}" onclick="${oc}">${opt}</button></div>`;
+      }
+
+      const isMy = myP === opt, isOth = othP === opt;
+      if (res) {
+        cls += opt === res ? (isMy ? ' correct' : ' is-result') : (isMy ? ' wrong' : '');
+      } else {
+        if (isMy) cls += ' my-pick';
+        oc = `dSavePick(${ji},${gi},'${opt}')`;
+      }
+      const md = isMy  ? `<div class="dist-dot ${myC}"></div>` : '';
+      const od = isOth ? `<div class="dist-dot ${othC}"></div>` : '';
+      dots = `<div class="dist-dots">${md}${od}</div>`;
+      return `<div class="dist-bwrap">
+        <button class="${cls}" ${oc ? `onclick="${oc}"` : 'disabled'}>${opt}</button>
+        ${dots}
+      </div>`;
+    }).join('');
+
+    return `<div class="dist-card${dAdmin?' adm':''}">
+      <div class="dist-teams">
+        <div class="dist-th">${home}</div>
+        <div class="dist-vs">vs</div>
+        <div class="dist-ta">${away}</div>
+      </div>
+      <div class="dist-btns">${btns}</div>
+    </div>`;
+  }).join('');
+}
+
+function dSetPlayer(p) {
+  dPlayer = p;
+  localStorage.setItem('dist_player', p);
+  document.getElementById('dpb-nuno').classList.toggle('active', p === 'nuno');
+  document.getElementById('dpb-patri').classList.toggle('active', p === 'patricinha');
+  dRenderTabs(); dRenderGames();
+}
+
+function dSetJornada(ji) { dJornada = ji; dRenderTabs(); dRenderGames(); }
+
+function dToggleAdmin() {
+  dAdmin = !dAdmin;
+  document.getElementById('dist-adm-btn').classList.toggle('active', dAdmin);
+  dRenderGames();
+}
+
+function dInit() {
+  dSetPlayer(dPlayer);
+  if (!dLoaded) { dLoaded = true; dLoadData(); }
+  else dRender();
 }
 </script>
 
