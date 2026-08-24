@@ -629,6 +629,22 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-dot{width:6px;height:6px;border-radius:50%}
 .dist-dot.nn{background:var(--nuno)}
 .dist-dot.pp{background:var(--patri)}
+.dist-pago-panel{background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin:0 12px 4px;max-width:640px;margin-left:auto;margin-right:auto;width:calc(100% - 24px)}
+.dist-pago-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;padding:3px 0;border-bottom:1px solid var(--border)}
+.dist-pago-row:last-of-type{border-bottom:none}
+.dist-pago-lbl{color:var(--text2)}
+.dist-pago-val{font-weight:700}
+.dist-pago-val.nn{color:var(--nuno)}
+.dist-pago-val.pp{color:var(--patri)}
+.dist-pago-val.total{color:var(--gold)}
+.dist-perfeita{background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.35);border-radius:6px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:var(--gold);text-align:center;margin:6px 0 4px;letter-spacing:.5px}
+.dist-pago-btn{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:all .15s}
+.dist-pago-btn:hover{border-color:var(--green);color:var(--green)}
+.dist-pago-btn.pago{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.dist-jtab.pago-done{color:var(--green)}
+.dist-jtab.pago-done.active{border-bottom-color:var(--green)}
+.dist-sval2{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;margin-top:2px}
+.dist-sval2.owe{color:#f97316}
 </style>
 </head>
 <body>
@@ -771,7 +787,8 @@ body.light .jpts.p0 { background: #f1f5f9; }
     <div class="dist-stat">
       <div class="dist-sname nn">Nuno</div>
       <div class="dist-sval" id="dsn-ac">–</div>
-      <div class="dist-ssub owe" id="dsn-eu">–</div>
+      <div class="dist-ssub">acertos</div>
+      <div class="dist-sval2 owe" id="dsn-eu">Patri deve –</div>
     </div>
     <div class="dist-stat mid">
       <div class="dist-sname bx">💰 Caixa</div>
@@ -781,7 +798,8 @@ body.light .jpts.p0 { background: #f1f5f9; }
     <div class="dist-stat">
       <div class="dist-sname pp">Patricinha</div>
       <div class="dist-sval" id="dsp-ac">–</div>
-      <div class="dist-ssub owe" id="dsp-eu">–</div>
+      <div class="dist-ssub">acertos</div>
+      <div class="dist-sval2 owe" id="dsp-eu">Nuno deve –</div>
     </div>
   </div>
   <div class="dist-player-bar">
@@ -794,8 +812,9 @@ body.light .jpts.p0 { background: #f1f5f9; }
   <div class="dist-jtabs-wrap">
     <div class="dist-jtabs" id="dist-jtabs"></div>
   </div>
-  <div class="dist-regras"><strong>Taxa:</strong> €1/jornada · <strong>Palpite certo:</strong> adversário paga €0,50 à caixa</div>
+  <div class="dist-regras"><strong>Taxa:</strong> €1/jornada · <strong>Acerto:</strong> adversário paga €0,50 · <strong>Perfeita:</strong> adversário paga €20 bónus</div>
   <div class="dist-jh" id="dist-jh"></div>
+  <div id="dist-pago-panel"></div>
   <div class="dist-games" id="dist-games"></div>
 </div>
 
@@ -2359,17 +2378,19 @@ const D_ORD = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11�
 const D_TAXA = 1.00;
 const D_PEN  = 0.50;
 
-let dPlayer  = localStorage.getItem('dist_player') || 'nuno';
-let dJornada = 0;
-let dAdmin   = false;
-let dPicks   = { nuno: {}, patricinha: {} };
-let dResults = {};
-let dLoaded  = false;
+let dPlayer     = localStorage.getItem('dist_player') || 'nuno';
+let dJornada    = 0;
+let dAdmin      = false;
+let dPicks      = { nuno: {}, patricinha: {} };
+let dResults    = {};
+let dPagamentos = new Set(); // jornadas marcadas como pagas
+let dLoaded     = false;
 
 async function dLoadData() {
-  const [{ data: pd }, { data: rd }] = await Promise.all([
+  const [{ data: pd }, { data: rd }, { data: pg }] = await Promise.all([
     sb.from('dist_palpites').select('*'),
     sb.from('dist_resultados').select('*'),
+    sb.from('dist_pagamentos').select('jornada'),
   ]);
   dPicks = { nuno: {}, patricinha: {} };
   (pd || []).forEach(p => {
@@ -2378,6 +2399,7 @@ async function dLoadData() {
   });
   dResults = {};
   (rd || []).forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
+  dPagamentos = new Set((pg || []).map(p => p.jornada));
   dRender();
 }
 
@@ -2411,44 +2433,50 @@ async function dSaveResult(j, g, opt) {
     { onConflict:'jornada,game_idx' });
 }
 
-function dCalcStats() {
-  let nA = 0, pA = 0;
-  const jorns = new Set();
-  D_JORNADAS.forEach((games, ji) => {
-    games.forEach((_, gi) => {
-      const key = `${ji}_${gi}`, res = dResults[key];
-      if (!res) return;
-      jorns.add(ji);
-      if (dPicks.nuno[key] === res) nA++;
-      if (dPicks.patricinha[key] === res) pA++;
-    });
-  });
-  const nJ = jorns.size;
-  const nPaga = nJ * D_TAXA + pA * D_PEN;
-  const pPaga = nJ * D_TAXA + nA * D_PEN;
-  return { nA, pA, nPaga, pPaga, caixa: nPaga + pPaga, nJ };
-}
-
 function dJornadaStats(ji) {
+  const games = D_JORNADAS[ji];
+  const total = games.length; // 8
   let nA = 0, pA = 0, nR = 0;
-  D_JORNADAS[ji].forEach((_, gi) => {
+  games.forEach((_, gi) => {
     const res = dResults[`${ji}_${gi}`];
     if (!res) return;
     nR++;
     if (dPicks.nuno[`${ji}_${gi}`] === res) nA++;
     if (dPicks.patricinha[`${ji}_${gi}`] === res) pA++;
   });
-  return { nA, pA, nR };
+  const allDone = nR === total;
+  const nPerfeita = allDone && nA === total; // Nuno acertou tudo → Patri paga bónus
+  const pPerfeita = allDone && pA === total; // Patri acertou tudo → Nuno paga bónus
+  // O que cada um deve nesta jornada
+  const taxa = nR > 0 ? D_TAXA : 0;
+  const patriDeve = taxa + nA * D_PEN + (nPerfeita ? 20 : 0); // Patri paga pelos acertos do Nuno
+  const nunoDeve  = taxa + pA * D_PEN + (pPerfeita ? 20 : 0); // Nuno paga pelos acertos da Patri
+  return { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve };
+}
+
+function dCalcStats() {
+  let nA = 0, pA = 0, nunoDeve = 0, patriDeve = 0;
+  const jorns = new Set();
+  D_JORNADAS.forEach((_, ji) => {
+    const s = dJornadaStats(ji);
+    if (s.nR === 0) return;
+    jorns.add(ji);
+    nA += s.nA;
+    pA += s.pA;
+    nunoDeve  += s.nunoDeve;
+    patriDeve += s.patriDeve;
+  });
+  return { nA, pA, nunoDeve, patriDeve, caixa: nunoDeve + patriDeve, nJ: jorns.size };
 }
 
 function dRender() { dRenderTabs(); dRenderGames(); dUpdateStats(); }
 
 function dUpdateStats() {
-  const { nA, pA, nPaga, pPaga, caixa, nJ } = dCalcStats();
+  const { nA, pA, nunoDeve, patriDeve, caixa, nJ } = dCalcStats();
   document.getElementById('dsn-ac').textContent = nA;
-  document.getElementById('dsn-eu').textContent = `€${nPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('dsn-eu').textContent = `Patri deve €${patriDeve.toFixed(2)}`;
   document.getElementById('dsp-ac').textContent = pA;
-  document.getElementById('dsp-eu').textContent = `€${pPaga.toFixed(2)} p/ caixa`;
+  document.getElementById('dsp-eu').textContent = `Nuno deve €${nunoDeve.toFixed(2)}`;
   document.getElementById('dsc-tot').textContent = `€${caixa.toFixed(2)}`;
   document.getElementById('dsc-sub').textContent = `${nJ}/30 jornadas`;
 }
@@ -2457,11 +2485,16 @@ function dRenderTabs() {
   document.getElementById('dist-jtabs').innerHTML = D_JORNADAS.map((games, ji) => {
     const hasPick = games.some((_, gi) => dPicks[dPlayer]?.[`${ji}_${gi}`]);
     const hasRes  = games.some((_, gi) => dResults[`${ji}_${gi}`]);
-    let cls = 'dist-jtab' + (ji === dJornada ? ' active' : '') + (hasRes ? ' done' : '');
+    const pago    = dPagamentos.has(ji);
+    let cls = 'dist-jtab';
+    if (ji === dJornada) cls += ' active';
+    if (pago) cls += ' pago-done';
+    else if (hasRes) cls += ' done';
     const pip = hasPick
       ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--nuno)':'var(--patri)'}"></span>`
       : '';
-    return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pip}</div>`;
+    const pagoMark = pago ? ' ✓' : '';
+    return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pagoMark}${pip}</div>`;
   }).join('');
   const el = document.getElementById('dist-jtabs').children[dJornada];
   if (el) el.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
@@ -2473,13 +2506,43 @@ function dRenderGames() {
   const other = dPlayer === 'nuno' ? 'patricinha' : 'nuno';
   const myC   = dPlayer === 'nuno' ? 'nn' : 'pp';
   const othC  = dPlayer === 'nuno' ? 'pp' : 'nn';
-  const { nA, pA, nR } = dJornadaStats(ji);
+  const { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve } = dJornadaStats(ji);
+  const pago = dPagamentos.has(ji);
 
   let scoreHTML = nR > 0
     ? `<div class="dist-jh-score"><span class="nn">${nA}</span>–<span class="pp">${pA}</span><span style="color:var(--muted);font-size:.72rem">(${nR}/8)</span></div>`
     : '';
   document.getElementById('dist-jh').innerHTML =
-    `<div class="dist-jh-title">${D_ORD[ji]} Jornada</div>${scoreHTML}`;
+    `<div class="dist-jh-title">${D_ORD[ji]} Jornada${pago ? ' <span style="color:var(--green);font-size:.75rem">✓ PAGA</span>' : ''}</div>${scoreHTML}`;
+
+  // Admin payment panel
+  let pagoPanel = '';
+  if (dAdmin && nR > 0) {
+    const perfHTML = nPerfeita
+      ? `<div class="dist-perfeita">🌟 PERFEITA Nuno! Patri paga +€20 bónus</div>`
+      : pPerfeita
+      ? `<div class="dist-perfeita">🌟 PERFEITA Patricinha! Nuno paga +€20 bónus</div>`
+      : '';
+    pagoPanel = `<div class="dist-pago-panel">
+      <div class="dist-pago-row">
+        <span class="dist-pago-lbl">Nuno acertou ${nA}/8 → Patri paga</span>
+        <span class="dist-pago-val pp">€${patriDeve.toFixed(2)}</span>
+      </div>
+      <div class="dist-pago-row">
+        <span class="dist-pago-lbl">Patri acertou ${pA}/8 → Nuno paga</span>
+        <span class="dist-pago-val nn">€${nunoDeve.toFixed(2)}</span>
+      </div>
+      <div class="dist-pago-row">
+        <span class="dist-pago-lbl">Total jornada</span>
+        <span class="dist-pago-val total">€${(patriDeve + nunoDeve).toFixed(2)}</span>
+      </div>
+      ${perfHTML}
+      <button class="dist-pago-btn${pago ? ' pago' : ''}" onclick="dTogglePago(${ji})">
+        ${pago ? '✓ JORNADA PAGA — clica para desmarcar' : '○ Marcar como Paga'}
+      </button>
+    </div>`;
+  }
+  document.getElementById('dist-pago-panel').innerHTML = pagoPanel;
 
   document.getElementById('dist-games').innerHTML = games.map(([home, away], gi) => {
     const key = `${ji}_${gi}`;
@@ -2525,6 +2588,18 @@ function dRenderGames() {
   }).join('');
 }
 
+async function dTogglePago(ji) {
+  if (dPagamentos.has(ji)) {
+    dPagamentos.delete(ji);
+    dRenderTabs(); dRenderGames();
+    await sb.from('dist_pagamentos').delete().eq('jornada', ji);
+  } else {
+    dPagamentos.add(ji);
+    dRenderTabs(); dRenderGames();
+    await sb.from('dist_pagamentos').upsert({ jornada: ji }, { onConflict: 'jornada' });
+  }
+}
+
 function dSetPlayer(p) {
   dPlayer = p;
   localStorage.setItem('dist_player', p);
@@ -2537,7 +2612,9 @@ function dSetJornada(ji) { dJornada = ji; dRenderTabs(); dRenderGames(); }
 
 function dToggleAdmin() {
   dAdmin = !dAdmin;
-  document.getElementById('dist-adm-btn').classList.toggle('active', dAdmin);
+  const btn = document.getElementById('dist-adm-btn');
+  btn.classList.toggle('active', dAdmin);
+  btn.textContent = dAdmin ? '⚙ Admin ON' : '⚙ Admin';
   dRenderGames();
 }
 
