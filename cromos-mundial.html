@@ -2536,16 +2536,17 @@ function dRenderExtras() {
       const correct = rVal && val === rVal;
       const wrong   = rVal && val && val !== rVal;
       const cls = correct ? ' correct' : wrong ? ' wrong' : '';
-      pickHTML = `
-        <div>
-          <div class="dist-ext-lbl">A minha aposta</div>
-          <select class="dist-ext-sel${cls}" onchange="dSaveExtra('${f}', this.value)"${locked ? ' disabled' : ''}>
-            ${empty}${eOpts(val)}
-          </select>
-          ${rVal ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : val ? '❌ Era: '+rVal : '⏳ '+rVal}</div>` : ''}
-        </div>`;
-      if (dAdmin) {
-        admHTML = `<div class="dist-ext-adm">
+      if (!dAdmin) {
+        pickHTML = `
+          <div>
+            <div class="dist-ext-lbl">A minha aposta</div>
+            <select class="dist-ext-sel${cls}" onchange="dSaveExtra('${f}', this.value)"${locked ? ' disabled' : ''}>
+              ${empty}${eOpts(val)}
+            </select>
+            ${rVal ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : val ? '❌ Era: '+rVal : '⏳ '+rVal}</div>` : ''}
+          </div>`;
+      } else {
+        admHTML = `<div>
           <div class="dist-ext-lbl" style="color:#f97316">Resultado (admin)</div>
           <select class="dist-ext-sel" style="border-color:rgba(249,115,22,.4)" onchange="dSaveExtrasResult('${f}', this.value)">
             ${empty}${eOpts(rVal)}
@@ -2561,17 +2562,18 @@ function dRenderExtras() {
       const correct = allResSet && mySet.size === 3 && [...mySet].every(t => rSet.has(t));
       const wrong   = allResSet && !correct && vals.some(Boolean);
       const picksLocked = allResSet || locked;
-      pickHTML = `
-        <div>
-          <div class="dist-ext-lbl">A minha aposta</div>
-          ${cat.fields.map((f, i) => `
-            <select class="dist-ext-sel" onchange="dSaveExtra('${f}', this.value)"${picksLocked ? ' disabled' : ''}>
-              ${empty}${eOpts(vals[i])}
-            </select>`).join('')}
-          ${allResSet ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : wrong ? '❌ Não acertaste (eram: '+rVals.join(', ')+')' : '⏳ '+rVals.join(', ')}</div>` : ''}
-        </div>`;
-      if (dAdmin) {
-        admHTML = `<div class="dist-ext-adm">
+      if (!dAdmin) {
+        pickHTML = `
+          <div>
+            <div class="dist-ext-lbl">A minha aposta</div>
+            ${cat.fields.map((f, i) => `
+              <select class="dist-ext-sel" onchange="dSaveExtra('${f}', this.value)"${picksLocked ? ' disabled' : ''}>
+                ${empty}${eOpts(vals[i])}
+              </select>`).join('')}
+            ${allResSet ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : wrong ? '❌ Não acertaste (eram: '+rVals.join(', ')+')' : '⏳ '+rVals.join(', ')}</div>` : ''}
+          </div>`;
+      } else {
+        admHTML = `<div>
           <div class="dist-ext-lbl" style="color:#f97316">Resultados (admin)</div>
           ${cat.fields.map((f, i) => `
             <select class="dist-ext-sel" style="border-color:rgba(249,115,22,.4)" onchange="dSaveExtrasResult('${f}', this.value)">
@@ -2582,8 +2584,7 @@ function dRenderExtras() {
     }
     return `<div class="dist-ext-card">
       <div class="dist-ext-cat">${cat.label}</div>
-      ${pickHTML}
-      ${admHTML}
+      ${pickHTML}${admHTML}
     </div>`;
   }).join('');
 }
@@ -2790,6 +2791,8 @@ function dToggleAdmin() {
   btn.textContent = dAdmin ? '⚙ Admin ON' : '⚙ Admin';
   document.getElementById('dpb-nuno').classList.toggle('active', !dAdmin && dPlayer === 'nuno');
   document.getElementById('dpb-patri').classList.toggle('active', !dAdmin && dPlayer === 'patricinha');
+  document.querySelector('.dist-pbtns').style.display = dAdmin ? 'none' : '';
+  document.querySelector('.dist-player-lbl').style.display = dAdmin ? 'none' : '';
   dRenderTabs(); dRenderGames();
 }
 
