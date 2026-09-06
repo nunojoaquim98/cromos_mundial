@@ -572,6 +572,12 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .theme-btn:hover { border-color: var(--gold); color: var(--gold); }
 /* ─── DISTRITAL ─── */
 #view-distrital{display:flex;flex-direction:column;min-height:100dvh}
+.dist-caixa-strip{display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 14px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap}
+.dist-cs-item{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.3px}
+.dist-cs-item.nn{color:var(--nuno)}
+.dist-cs-item.pp{color:var(--patri)}
+.dist-cs-sep{color:var(--border2);font-size:.75rem}
+.dist-cs-caixa{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.9rem;color:var(--gold);letter-spacing:.5px}
 .dist-jtabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:90}
 .dist-jtabs{display:flex;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none}
 .dist-jtabs::-webkit-scrollbar{display:none}
@@ -780,6 +786,13 @@ body.light .jpts.p0 { background: #f1f5f9; }
       <button class="dist-pb pp" id="dpb-patri" onclick="dSetPlayer('patricinha')">Patricinha</button>
     </div>
     <button class="dist-admin-btn" id="dist-adm-btn" onclick="dToggleAdmin()">⚙ Admin</button>
+  </div>
+  <div class="dist-caixa-strip" id="dist-caixa-strip">
+    <span class="dist-cs-item nn" id="dcs-nuno">Nuno deve €–</span>
+    <span class="dist-cs-sep">·</span>
+    <span class="dist-cs-caixa" id="dcs-caixa">💰 €–</span>
+    <span class="dist-cs-sep">·</span>
+    <span class="dist-cs-item pp" id="dcs-patri">Patri deve €–</span>
   </div>
   <div class="dist-jtabs-wrap">
     <div class="dist-jtabs" id="dist-jtabs"></div>
@@ -2445,13 +2458,10 @@ function dCalcStats() {
 function dRender() { dRenderTabs(); dRenderGames(); dUpdateStats(); }
 
 function dUpdateStats() {
-  const { nA, pA, nunoDeve, patriDeve, caixa, nJ } = dCalcStats();
-  document.getElementById('dsn-ac').textContent = nA;
-  document.getElementById('dsn-eu').textContent = `Patri deve €${patriDeve.toFixed(2)}`;
-  document.getElementById('dsp-ac').textContent = pA;
-  document.getElementById('dsp-eu').textContent = `Nuno deve €${nunoDeve.toFixed(2)}`;
-  document.getElementById('dsc-tot').textContent = `€${caixa.toFixed(2)}`;
-  document.getElementById('dsc-sub').textContent = `${nJ}/30 jornadas`;
+  const { nunoDeve, patriDeve, caixa } = dCalcStats();
+  document.getElementById('dcs-nuno').textContent = `Nuno deve €${nunoDeve.toFixed(2)}`;
+  document.getElementById('dcs-patri').textContent = `Patri deve €${patriDeve.toFixed(2)}`;
+  document.getElementById('dcs-caixa').textContent = `💰 €${caixa.toFixed(2)}`;
 }
 
 function dRenderTabs() {
