@@ -2449,8 +2449,10 @@ function dCalcStats() {
     jorns.add(ji);
     nA += s.nA;
     pA += s.pA;
-    nunoDeve  += s.nunoDeve;
-    patriDeve += s.patriDeve;
+    if (!dPagamentos.has(ji)) {
+      nunoDeve  += s.nunoDeve;
+      patriDeve += s.patriDeve;
+    }
   });
   return { nA, pA, nunoDeve, patriDeve, caixa: nunoDeve + patriDeve, nJ: jorns.size };
 }
