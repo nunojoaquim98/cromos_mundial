@@ -2580,11 +2580,11 @@ function dRenderGames() {
 async function dTogglePago(ji) {
   if (dPagamentos.has(ji)) {
     dPagamentos.delete(ji);
-    dRenderTabs(); dRenderGames();
+    dRenderTabs(); dRenderGames(); dUpdateStats();
     await sb.from('dist_pagamentos').delete().eq('jornada', ji);
   } else {
     dPagamentos.add(ji);
-    dRenderTabs(); dRenderGames();
+    dRenderTabs(); dRenderGames(); dUpdateStats();
     await sb.from('dist_pagamentos').upsert({ jornada: ji }, { onConflict: 'jornada' });
   }
 }
