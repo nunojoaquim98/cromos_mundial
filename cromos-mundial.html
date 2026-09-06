@@ -575,8 +575,8 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-caixa-strip{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 14px;background:var(--surface2);border-bottom:1px solid var(--border);flex-wrap:wrap}
 .dist-cs-devido{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .dist-cs-item{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.85rem;letter-spacing:.3px}
-.dist-cs-item.nn{color:var(--nuno)}
-.dist-cs-item.pp{color:var(--patri)}
+.dist-cs-item.nn{color:var(--blue)}
+.dist-cs-item.pp{color:var(--purple)}
 .dist-cs-sep{color:var(--border2);font-size:.75rem}
 .dist-cs-pote{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;color:var(--gold);letter-spacing:.5px;background:rgba(234,179,8,.1);border:1px solid rgba(234,179,8,.3);border-radius:8px;padding:3px 10px;white-space:nowrap}
 .dist-jtabs-wrap{background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:90}
@@ -591,17 +591,17 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-jh{display:flex;align-items:center;justify-content:space-between;padding:10px 16px 4px;max-width:640px;margin:0 auto}
 .dist-jh-title{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:1px}
 .dist-jh-score{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;color:var(--text2);display:flex;align-items:center;gap:5px}
-.dist-jh-score .nn{color:var(--nuno);font-weight:700;font-size:.95rem}
-.dist-jh-score .pp{color:var(--patri);font-weight:700;font-size:.95rem}
-.dist-player-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;max-width:100%}
-.dist-player-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);flex-shrink:0}
-.dist-pbtns{display:flex;flex:1;gap:6px}
-.dist-pb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;padding:9px 0;border-radius:10px;border:2px solid;cursor:pointer;background:transparent;transition:all .18s;letter-spacing:.5px;flex:1;text-align:center}
-.dist-pb.nn{border-color:var(--nuno);color:var(--nuno)}
-.dist-pb.nn.active{background:var(--nuno);color:#fff;box-shadow:0 0 12px rgba(59,130,246,.35)}
-.dist-pb.pp{border-color:var(--patri);color:var(--patri)}
-.dist-pb.pp.active{background:var(--patri);color:#fff;box-shadow:0 0 12px rgba(236,72,153,.35)}
-.dist-admin-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:8px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:1px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.dist-jh-score .nn{color:var(--blue);font-weight:700;font-size:.95rem}
+.dist-jh-score .pp{color:var(--purple);font-weight:700;font-size:.95rem}
+.dist-player-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:7px 12px;display:flex;align-items:center;gap:8px;max-width:100%}
+.dist-player-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.dist-pbtns{display:flex;gap:5px}
+.dist-pb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;padding:5px 16px;border-radius:20px;border:2px solid;cursor:pointer;transition:all .18s;letter-spacing:.5px;white-space:nowrap;opacity:.45}
+.dist-pb.nn{border-color:var(--blue);color:var(--blue);background:transparent}
+.dist-pb.nn.active{background:var(--blue);color:#fff;opacity:1;box-shadow:0 0 10px rgba(59,130,246,.3)}
+.dist-pb.pp{border-color:var(--purple);color:var(--purple);background:transparent}
+.dist-pb.pp.active{background:var(--purple);color:#fff;opacity:1;box-shadow:0 0 10px rgba(168,85,247,.3)}
+.dist-admin-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.7rem;letter-spacing:1px;cursor:pointer;transition:all .15s;flex-shrink:0;margin-left:auto}
 .dist-admin-btn.active{border-color:#f97316;color:#f97316;background:rgba(249,115,22,.08)}
 .dist-regras{max-width:640px;margin:4px auto 0;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--muted);text-align:center}
 .dist-regras strong{color:var(--text2)}
@@ -624,15 +624,15 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-txb:disabled{cursor:default}
 .dist-dots{display:flex;justify-content:center;align-items:center;gap:3px;min-height:7px}
 .dist-dot{width:6px;height:6px;border-radius:50%}
-.dist-dot.nn{background:var(--nuno)}
-.dist-dot.pp{background:var(--patri)}
+.dist-dot.nn{background:var(--blue)}
+.dist-dot.pp{background:var(--purple)}
 .dist-pago-panel{background:var(--surface3);border:1px solid var(--border2);border-radius:10px;padding:10px 14px;margin:0 12px 4px;max-width:640px;margin-left:auto;margin-right:auto;width:calc(100% - 24px)}
 .dist-pago-row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;padding:3px 0;border-bottom:1px solid var(--border)}
 .dist-pago-row:last-of-type{border-bottom:none}
 .dist-pago-lbl{color:var(--text2)}
 .dist-pago-val{font-weight:700}
-.dist-pago-val.nn{color:var(--nuno)}
-.dist-pago-val.pp{color:var(--patri)}
+.dist-pago-val.nn{color:var(--blue)}
+.dist-pago-val.pp{color:var(--purple)}
 .dist-pago-val.total{color:var(--gold)}
 .dist-perfeita{background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.35);border-radius:6px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:var(--gold);text-align:center;margin:6px 0 4px;letter-spacing:.5px}
 .dist-pago-btn{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:all .15s}
@@ -2480,7 +2480,7 @@ function dRenderTabs() {
     if (pago) cls += ' pago-done';
     else if (hasRes) cls += ' done';
     const pip = hasPick
-      ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--nuno)':'var(--patri)'}"></span>`
+      ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--blue)':'var(--purple)'}"></span>`
       : '';
     const pagoMark = pago ? ' ✓' : '';
     return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pagoMark}${pip}</div>`;
