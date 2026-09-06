@@ -2652,7 +2652,7 @@ function dRenderTabs() {
     if (ji === dJornada) cls += ' active';
     if (pago) cls += ' pago-done';
     else if (hasRes) cls += ' done';
-    const pip = hasPick
+    const pip = (!dAdmin && hasPick)
       ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--blue)':'var(--purple)'}"></span>`
       : '';
     const pagoMark = pago ? ' ✓' : '';
@@ -2776,8 +2776,8 @@ async function dTogglePago(ji) {
 function dSetPlayer(p) {
   dPlayer = p;
   localStorage.setItem('dist_player', p);
-  document.getElementById('dpb-nuno').classList.toggle('active', p === 'nuno');
-  document.getElementById('dpb-patri').classList.toggle('active', p === 'patricinha');
+  document.getElementById('dpb-nuno').classList.toggle('active', !dAdmin && p === 'nuno');
+  document.getElementById('dpb-patri').classList.toggle('active', !dAdmin && p === 'patricinha');
   dRenderTabs(); dRenderGames();
 }
 
@@ -2788,7 +2788,9 @@ function dToggleAdmin() {
   const btn = document.getElementById('dist-adm-btn');
   btn.classList.toggle('active', dAdmin);
   btn.textContent = dAdmin ? '⚙ Admin ON' : '⚙ Admin';
-  dRenderGames();
+  document.getElementById('dpb-nuno').classList.toggle('active', !dAdmin && dPlayer === 'nuno');
+  document.getElementById('dpb-patri').classList.toggle('active', !dAdmin && dPlayer === 'patricinha');
+  dRenderTabs(); dRenderGames();
 }
 
 function dInit() {
