@@ -597,15 +597,16 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-jh-score{font-family:'Barlow Condensed',sans-serif;font-size:.88rem;color:var(--text2);display:flex;align-items:center;gap:5px}
 .dist-jh-score .nn{color:var(--nuno);font-weight:700;font-size:.95rem}
 .dist-jh-score .pp{color:var(--patri);font-weight:700;font-size:.95rem}
-.dist-player-bar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px 0;max-width:640px;margin:0 auto}
-.dist-pbtns{display:flex;gap:6px}
-.dist-pb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;padding:5px 12px;border-radius:20px;border:2px solid;cursor:pointer;background:transparent;transition:all .15s;letter-spacing:.5px}
+.dist-player-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;max-width:100%}
+.dist-player-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.75rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);flex-shrink:0}
+.dist-pbtns{display:flex;flex:1;gap:6px}
+.dist-pb{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;padding:9px 0;border-radius:10px;border:2px solid;cursor:pointer;background:transparent;transition:all .18s;letter-spacing:.5px;flex:1;text-align:center}
 .dist-pb.nn{border-color:var(--nuno);color:var(--nuno)}
-.dist-pb.nn.active{background:var(--nuno);color:#fff}
+.dist-pb.nn.active{background:var(--nuno);color:#fff;box-shadow:0 0 12px rgba(59,130,246,.35)}
 .dist-pb.pp{border-color:var(--patri);color:var(--patri)}
-.dist-pb.pp.active{background:var(--patri);color:#fff}
-.dist-admin-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:1px;cursor:pointer;transition:all .15s}
-.dist-admin-btn.active{border-color:#f97316;color:#f97316}
+.dist-pb.pp.active{background:var(--patri);color:#fff;box-shadow:0 0 12px rgba(236,72,153,.35)}
+.dist-admin-btn{background:none;border:1px solid var(--border2);color:var(--muted);border-radius:8px;padding:8px 12px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.75rem;letter-spacing:1px;cursor:pointer;transition:all .15s;flex-shrink:0}
+.dist-admin-btn.active{border-color:#f97316;color:#f97316;background:rgba(249,115,22,.08)}
 .dist-regras{max-width:640px;margin:4px auto 0;padding:0 14px;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;color:var(--muted);text-align:center}
 .dist-regras strong{color:var(--text2)}
 .dist-games{padding:4px 12px max(100px,calc(80px + env(safe-area-inset-bottom)));display:flex;flex-direction:column;gap:7px;max-width:640px;margin:0 auto}
@@ -803,9 +804,10 @@ body.light .jpts.p0 { background: #f1f5f9; }
     </div>
   </div>
   <div class="dist-player-bar">
+    <span class="dist-player-lbl">Sou o:</span>
     <div class="dist-pbtns">
       <button class="dist-pb nn" id="dpb-nuno" onclick="dSetPlayer('nuno')">Nuno</button>
-      <button class="dist-pb pp" id="dpb-patri" onclick="dSetPlayer('patricinha')">Patri</button>
+      <button class="dist-pb pp" id="dpb-patri" onclick="dSetPlayer('patricinha')">Patricinha</button>
     </div>
     <button class="dist-admin-btn" id="dist-adm-btn" onclick="dToggleAdmin()">⚙ Admin</button>
   </div>
