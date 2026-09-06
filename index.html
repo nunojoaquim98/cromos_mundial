@@ -254,7 +254,7 @@ main { padding: 24px; max-width: 1440px; margin: 0 auto; }
 .jteam{display:flex;align-items:center;gap:6px}
 .jteam.r{flex-direction:row-reverse}
 .jflag{font-size:1.4rem;line-height:1}
-.jname{font-family:'Barlow Condensed',sans-serif;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.2}
+.jname{font-family:'Barlow Condensed',san ght:700;text-transform:uppercase;letter-spacing:.04em;line-height:1.2}
 .jname.r{text-align:right}
 .jmid{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:118px}
 .jsrow{display:flex;align-items:center;gap:4px}
@@ -812,7 +812,7 @@ body.light .jpts.p0 { background: #f1f5f9; }
   <div class="dist-jtabs-wrap">
     <div class="dist-jtabs" id="dist-jtabs"></div>
   </div>
-  <div class="dist-regras"><strong>Por acerto:</strong> adversário paga €0,50 · <strong>Perfeita (8/8):</strong> adversário paga €20 (flat)</div>
+  <div class="dist-regras"><strong>Taxa:</strong> €2/jornada cada · <strong>Por acerto:</strong> adversário paga €0,50 · <strong>Perfeita (8/8):</strong> adversário paga €20 (flat)</div>
   <div class="dist-jh" id="dist-jh"></div>
   <div id="dist-pago-panel"></div>
   <div class="dist-games" id="dist-games"></div>
@@ -2375,6 +2375,7 @@ const D_JORNADAS = [
 
 const D_ORD = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11ª','12ª','13ª','14ª','15ª',
                '16ª','17ª','18ª','19ª','20ª','21ª','22ª','23ª','24ª','25ª','26ª','27ª','28ª','29ª','30ª'];
+const D_TAXA     = 2.00;
 const D_PEN      = 0.50;
 const D_PERFEITA = 20.00;
 
@@ -2447,9 +2448,10 @@ function dJornadaStats(ji) {
   const allDone = nR === total;
   const nPerfeita = allDone && nA === total; // Nuno acertou tudo → Patri paga €20
   const pPerfeita = allDone && pA === total; // Patri acertou tudo → Nuno paga €20
-  // Perfeita = €20 flat; senão €0.50 por acerto
-  const patriDeve = nPerfeita ? D_PERFEITA : nA * D_PEN;
-  const nunoDeve  = pPerfeita ? D_PERFEITA : pA * D_PEN;
+  // Taxa fixa €2 por jornada finalizada + €0.50 por acerto (ou €20 flat se perfeita)
+  const taxa = nR > 0 ? D_TAXA : 0;
+  const patriDeve = taxa + (nPerfeita ? D_PERFEITA : nA * D_PEN);
+  const nunoDeve  = taxa + (pPerfeita ? D_PERFEITA : pA * D_PEN);
   return { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve };
 }
 
@@ -2532,7 +2534,11 @@ function dRenderGames() {
         <span class="dist-pago-val pp">${pA}/8${pPerfeita ? ' 🌟' : ''}</span>
       </div>
       <div class="dist-pago-row">
-        <span class="dist-pago-lbl">Total a pagar</span>
+        <span class="dist-pago-lbl">Taxa jornada (cada)</span>
+        <span class="dist-pago-val" style="color:var(--text2)">€${D_TAXA.toFixed(2)}</span>
+      </div>
+      <div class="dist-pago-row">
+        <span class="dist-pago-lbl">Total a pagar (ambos)</span>
         <span class="dist-pago-val total">€${(patriDeve + nunoDeve).toFixed(2)}</span>
       </div>
       ${perfHTML}
