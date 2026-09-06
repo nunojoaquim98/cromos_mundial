@@ -640,6 +640,19 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-pago-btn.pago{border-color:var(--green);background:var(--green-dim);color:var(--green)}
 .dist-jtab.pago-done{color:var(--green)}
 .dist-jtab.pago-done.active{border-bottom-color:var(--green)}
+.dist-jtab.extras-tab{color:var(--gold)}
+.dist-jtab.extras-tab.active{border-bottom-color:var(--gold);color:var(--gold)}
+.dist-ext-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
+.dist-ext-cat{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.8rem;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.dist-ext-lbl{font-size:.7rem;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:.5px;text-transform:uppercase;margin-bottom:3px}
+.dist-ext-sel{width:100%;padding:8px 10px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Barlow Condensed',sans-serif;font-size:.95rem;cursor:pointer;transition:border-color .15s;margin-top:3px}
+.dist-ext-sel.correct{border-color:var(--green)}
+.dist-ext-sel.wrong{border-color:var(--red,#ef4444)}
+.dist-ext-sel:focus{outline:none;border-color:var(--blue)}
+.dist-ext-sel:disabled{opacity:.7;cursor:default}
+.dist-ext-status{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;margin-top:6px}
+.dist-ext-res{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:var(--text2);margin-top:4px}
+.dist-ext-adm{border-top:1px dashed var(--border2);padding-top:10px;margin-top:4px}
 .dist-sval2{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;margin-top:2px}
 .dist-sval2.owe{color:#f97316}
 </style>
@@ -2365,20 +2378,35 @@ const D_ORD = ['1ª','2ª','3ª','4ª','5ª','6ª','7ª','8ª','9ª','10ª','11�
 const D_TAXA     = 2.00;
 const D_PEN      = 0.50;
 const D_PERFEITA = 20.00;
+const D_EXTRAS_POR_ACERTO = 5.00;
+const D_EQUIPAS = ['Alqueidão Serra','Beneditense','Boavista','Bombarralense','Caldas B','GC Alcobaça','GD Ilha','GD Peniche','Guiense','Marinhense','Portomosense','SC Pombal','SCL Marrazes','SL Marinha','U. Pombal','Vieirense'];
+const D_EXTRA_CATS = [
+  { id:'campea',   label:'Equipa Campeã',          fields:['campea']                          },
+  { id:'descidas', label:'3 Equipas que Descem',   fields:['descida1','descida2','descida3']  },
+  { id:'taca',     label:'Vencedor Taça Distrital', fields:['taca']                            },
+  { id:'ataque',   label:'Melhor Ataque',           fields:['ataque']                          },
+  { id:'defesa',   label:'Melhor Defesa',           fields:['defesa']                          },
+];
 
-let dPlayer     = localStorage.getItem('dist_player') || 'nuno';
-let dJornada    = 0;
-let dAdmin      = false;
-let dPicks      = { nuno: {}, patricinha: {} };
-let dResults    = {};
-let dPagamentos = new Set(); // jornadas marcadas como pagas
-let dLoaded     = false;
+let dPlayer      = localStorage.getItem('dist_player') || 'nuno';
+let dJornada     = 0;
+let dAdmin       = false;
+let dPicks       = { nuno: {}, patricinha: {} };
+let dResults     = {};
+let dPagamentos  = new Set();
+let dExtrasPicks = { nuno: {}, patricinha: {} };
+let dExtrasRes   = {};
+let dExtrasPago  = false;
+let dLoaded      = false;
 
 async function dLoadData() {
-  const [{ data: pd }, { data: rd }, { data: pg }] = await Promise.all([
+  const [{ data: pd }, { data: rd }, { data: pg }, { data: ep }, { data: er }, { data: epg }] = await Promise.all([
     sb.from('dist_palpites').select('*'),
     sb.from('dist_resultados').select('*'),
     sb.from('dist_pagamentos').select('jornada'),
+    sb.from('dist_extras_palpites').select('*'),
+    sb.from('dist_extras_resultados').select('*').eq('id', 1),
+    sb.from('dist_extras_pagamento').select('id').eq('id', 1),
   ]);
   dPicks = { nuno: {}, patricinha: {} };
   (pd || []).forEach(p => {
@@ -2388,6 +2416,10 @@ async function dLoadData() {
   dResults = {};
   (rd || []).forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
   dPagamentos = new Set((pg || []).map(p => p.jornada));
+  dExtrasPicks = { nuno: {}, patricinha: {} };
+  (ep || []).forEach(p => { dExtrasPicks[p.player] = p; });
+  dExtrasRes = (er && er[0]) ? er[0] : {};
+  dExtrasPago = !!(epg && epg.length > 0);
   dRender();
 }
 
@@ -2419,6 +2451,141 @@ async function dSaveResult(j, g, opt) {
   dRenderGames(); dUpdateStats(); dRenderTabs();
   await sb.from('dist_resultados').upsert({ jornada:j, game_idx:g, resultado:opt },
     { onConflict:'jornada,game_idx' });
+}
+
+// ── EXTRAS LOGIC ──
+function dExtrasStats() {
+  const r = dExtrasRes;
+  const allSet = r.campea && r.descida1 && r.descida2 && r.descida3 && r.taca && r.ataque && r.defesa;
+  if (!allSet) return { nAcertos: 0, pAcertos: 0, patriDeve: 0, nunoDeve: 0, allSet: false };
+  let nA = 0, pA = 0;
+  const np = dExtrasPicks.nuno || {}, pp = dExtrasPicks.patricinha || {};
+  ['campea','taca','ataque','defesa'].forEach(f => {
+    if (np[f] === r[f]) nA++;
+    if (pp[f] === r[f]) pA++;
+  });
+  const rSet = new Set([r.descida1, r.descida2, r.descida3]);
+  const nSet = new Set([np.descida1, np.descida2, np.descida3].filter(Boolean));
+  const pSet = new Set([pp.descida1, pp.descida2, pp.descida3].filter(Boolean));
+  if (nSet.size === 3 && [...nSet].every(t => rSet.has(t))) nA++;
+  if (pSet.size === 3 && [...pSet].every(t => rSet.has(t))) pA++;
+  return { nAcertos: nA, pAcertos: pA, patriDeve: nA * D_EXTRAS_POR_ACERTO, nunoDeve: pA * D_EXTRAS_POR_ACERTO, allSet };
+}
+
+async function dSaveExtra(field, value) {
+  if (!dExtrasPicks[dPlayer]) dExtrasPicks[dPlayer] = {};
+  dExtrasPicks[dPlayer][field] = value || null;
+  dRenderExtras(); dUpdateStats();
+  const row = { player: dPlayer, ...dExtrasPicks[dPlayer] };
+  await sb.from('dist_extras_palpites').upsert(row, { onConflict: 'player' });
+}
+
+async function dSaveExtrasResult(field, value) {
+  dExtrasRes[field] = value || null;
+  dRenderExtras(); dUpdateStats();
+  const row = { id: 1, ...dExtrasRes };
+  await sb.from('dist_extras_resultados').upsert(row, { onConflict: 'id' });
+}
+
+async function dToggleExtrasPago() {
+  dExtrasPago = !dExtrasPago;
+  dRenderExtras(); dUpdateStats();
+  if (dExtrasPago) await sb.from('dist_extras_pagamento').upsert({ id: 1 }, { onConflict: 'id' });
+  else await sb.from('dist_extras_pagamento').delete().eq('id', 1);
+}
+
+function dRenderExtras() {
+  const stats = dExtrasStats();
+  const myP = dExtrasPicks[dPlayer] || {};
+  const r = dExtrasRes;
+  const pago = dExtrasPago;
+  const pagoMark = pago ? ' <span style="color:var(--green);font-size:.75rem">✓ PAGO</span>' : '';
+  const scoreHTML = stats.allSet
+    ? `<div class="dist-jh-score"><span class="nn">${stats.nAcertos}</span>–<span class="pp">${stats.pAcertos}</span><span style="color:var(--muted);font-size:.72rem">(acertos/5)</span></div>`
+    : '';
+  document.getElementById('dist-jh').innerHTML =
+    `<div class="dist-jh-title">Apostas Extras${pagoMark}</div>${scoreHTML}`;
+
+  let pagoPanel = '';
+  if (dAdmin && stats.allSet) {
+    pagoPanel = `<div class="dist-pago-panel">
+      <div class="dist-pago-row"><span class="dist-pago-lbl">Nuno acertou</span><span class="dist-pago-val nn">${stats.nAcertos}/5</span></div>
+      <div class="dist-pago-row"><span class="dist-pago-lbl">Patri acertou</span><span class="dist-pago-val pp">${stats.pAcertos}/5</span></div>
+      <div class="dist-pago-row"><span class="dist-pago-lbl">Patri deve</span><span class="dist-pago-val" style="color:var(--text2)">€${stats.patriDeve.toFixed(2)}</span></div>
+      <div class="dist-pago-row"><span class="dist-pago-lbl">Nuno deve</span><span class="dist-pago-val" style="color:var(--text2)">€${stats.nunoDeve.toFixed(2)}</span></div>
+      <button class="dist-pago-btn${pago ? ' pago' : ''}" onclick="dToggleExtrasPago()">
+        ${pago ? '✓ EXTRAS PAGOS — clica para desmarcar' : '○ Marcar como Pago'}
+      </button>
+    </div>`;
+  }
+  document.getElementById('dist-pago-panel').innerHTML = pagoPanel;
+
+  const eOpts = (sel) => D_EQUIPAS.map(t =>
+    `<option value="${t}"${sel === t ? ' selected' : ''}>${t}</option>`).join('');
+  const empty = `<option value="">— escolhe —</option>`;
+  const locked = stats.allSet; // lock picks once results are set
+
+  document.getElementById('dist-games').innerHTML = D_EXTRA_CATS.map(cat => {
+    const isMulti = cat.fields.length > 1;
+    let pickHTML = '', admHTML = '';
+
+    if (!isMulti) {
+      const f = cat.fields[0];
+      const val = myP[f] || '';
+      const rVal = r[f] || '';
+      const correct = rVal && val === rVal;
+      const wrong   = rVal && val && val !== rVal;
+      const cls = correct ? ' correct' : wrong ? ' wrong' : '';
+      pickHTML = `
+        <div>
+          <div class="dist-ext-lbl">A minha aposta</div>
+          <select class="dist-ext-sel${cls}" onchange="dSaveExtra('${f}', this.value)"${locked ? ' disabled' : ''}>
+            ${empty}${eOpts(val)}
+          </select>
+          ${rVal ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : val ? '❌ Era: '+rVal : '⏳ '+rVal}</div>` : ''}
+        </div>`;
+      if (dAdmin) {
+        admHTML = `<div class="dist-ext-adm">
+          <div class="dist-ext-lbl" style="color:#f97316">Resultado (admin)</div>
+          <select class="dist-ext-sel" style="border-color:rgba(249,115,22,.4)" onchange="dSaveExtrasResult('${f}', this.value)">
+            ${empty}${eOpts(rVal)}
+          </select>
+        </div>`;
+      }
+    } else {
+      const vals = cat.fields.map(f => myP[f] || '');
+      const rVals = cat.fields.map(f => r[f] || '');
+      const rSet = new Set(rVals.filter(Boolean));
+      const mySet = new Set(vals.filter(Boolean));
+      const allResSet = rVals.every(Boolean);
+      const correct = allResSet && mySet.size === 3 && [...mySet].every(t => rSet.has(t));
+      const wrong   = allResSet && !correct && vals.some(Boolean);
+      const picksLocked = allResSet || locked;
+      pickHTML = `
+        <div>
+          <div class="dist-ext-lbl">A minha aposta</div>
+          ${cat.fields.map((f, i) => `
+            <select class="dist-ext-sel" onchange="dSaveExtra('${f}', this.value)"${picksLocked ? ' disabled' : ''}>
+              ${empty}${eOpts(vals[i])}
+            </select>`).join('')}
+          ${allResSet ? `<div class="dist-ext-status">${correct ? '✅ Acertaste!' : wrong ? '❌ Não acertaste (eram: '+rVals.join(', ')+')' : '⏳ '+rVals.join(', ')}</div>` : ''}
+        </div>`;
+      if (dAdmin) {
+        admHTML = `<div class="dist-ext-adm">
+          <div class="dist-ext-lbl" style="color:#f97316">Resultados (admin)</div>
+          ${cat.fields.map((f, i) => `
+            <select class="dist-ext-sel" style="border-color:rgba(249,115,22,.4)" onchange="dSaveExtrasResult('${f}', this.value)">
+              ${empty}${eOpts(rVals[i])}
+            </select>`).join('')}
+        </div>`;
+      }
+    }
+    return `<div class="dist-ext-card">
+      <div class="dist-ext-cat">${cat.label}</div>
+      ${pickHTML}
+      ${admHTML}
+    </div>`;
+  }).join('');
 }
 
 function dJornadaStats(ji) {
@@ -2458,6 +2625,11 @@ function dCalcStats() {
       patriDeve += s.patriDeve;
     }
   });
+  const es = dExtrasStats();
+  if (es.allSet) {
+    if (dExtrasPago) pote += es.patriDeve + es.nunoDeve;
+    else { nunoDeve += es.nunoDeve; patriDeve += es.patriDeve; }
+  }
   return { nA, pA, nunoDeve, patriDeve, caixa: nunoDeve + patriDeve, pote, nJ: jorns.size };
 }
 
@@ -2471,7 +2643,8 @@ function dUpdateStats() {
 }
 
 function dRenderTabs() {
-  document.getElementById('dist-jtabs').innerHTML = D_JORNADAS.map((games, ji) => {
+  const extStats = dExtrasStats();
+  const tabs = D_JORNADAS.map((games, ji) => {
     const hasPick = games.some((_, gi) => dPicks[dPlayer]?.[`${ji}_${gi}`]);
     const hasRes  = games.some((_, gi) => dResults[`${ji}_${gi}`]);
     const pago    = dPagamentos.has(ji);
@@ -2485,11 +2658,18 @@ function dRenderTabs() {
     const pagoMark = pago ? ' ✓' : '';
     return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pagoMark}${pip}</div>`;
   }).join('');
-  const el = document.getElementById('dist-jtabs').children[dJornada];
+  let extCls = 'dist-jtab extras-tab';
+  if (dJornada === 30) extCls += ' active';
+  if (dExtrasPago) extCls += ' pago-done';
+  else if (extStats.allSet) extCls += ' done';
+  document.getElementById('dist-jtabs').innerHTML = tabs +
+    `<div class="${extCls}" onclick="dSetJornada(30)">⭐ Extras${dExtrasPago ? ' ✓' : ''}</div>`;
+  const el = document.getElementById('dist-jtabs').children[dJornada === 30 ? 30 : dJornada];
   if (el) el.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
 }
 
 function dRenderGames() {
+  if (dJornada === 30) { dRenderExtras(); return; }
   const ji = dJornada;
   const games = D_JORNADAS[ji];
   const other = dPlayer === 'nuno' ? 'patricinha' : 'nuno';
