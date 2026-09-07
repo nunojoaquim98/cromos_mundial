@@ -2829,14 +2829,14 @@ function dRenderGames() {
       }
     }
 
+    const isExato = gi === D_EXATO_JOGOS[ji];
     return `<div class="dist-card${dAdmin?' adm':''}">
       <div class="dist-teams">
         <div class="dist-th">${home}</div>
         <div class="dist-vs">vs</div>
         <div class="dist-ta">${away}</div>
       </div>
-      <div class="dist-btns">${btns}</div>
-      ${exatoHTML}
+      ${isExato ? exatoHTML : `<div class="dist-btns">${btns}</div>`}
     </div>`;
   }).join('');
 }
