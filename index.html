@@ -653,6 +653,15 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-ext-status{font-family:'Barlow Condensed',sans-serif;font-size:.85rem;margin-top:6px}
 .dist-ext-res{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;color:var(--text2);margin-top:4px}
 .dist-ext-adm{border-top:1px dashed var(--border2);padding-top:10px;margin-top:4px}
+.dist-exato{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(234,179,8,.35)}
+.dist-exato-lbl{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;letter-spacing:1.2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.dist-exato-row{display:flex;align-items:center;gap:7px}
+.dist-exato-inp{width:46px;padding:6px 4px;text-align:center;border-radius:7px;border:1.5px solid var(--border2);background:var(--surface2);color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:1.15rem;-moz-appearance:textfield}
+.dist-exato-inp::-webkit-inner-spin-button,.dist-exato-inp::-webkit-outer-spin-button{-webkit-appearance:none}
+.dist-exato-inp:focus{outline:none;border-color:var(--gold)}
+.dist-exato-inp.adm{border-color:rgba(249,115,22,.45)}
+.dist-exato-sep{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--muted)}
+.dist-exato-status{font-family:'Barlow Condensed',sans-serif;font-size:.8rem;margin-top:5px}
 .dist-sval2{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;margin-top:2px}
 .dist-sval2.owe{color:#f97316}
 </style>
@@ -2379,6 +2388,9 @@ const D_TAXA     = 2.00;
 const D_PEN      = 0.50;
 const D_PERFEITA = 20.00;
 const D_EXTRAS_POR_ACERTO = 5.00;
+const D_EXATO_BONUS = 2.00;
+// índice do jogo "resultado exato" por jornada (pré-definido, 0-7)
+const D_EXATO_JOGOS = [3,6,1,7,0,5,2,4,6,1,7,3,0,5,4,2,6,0,3,7,1,5,4,2,6,3,7,0,5,1];
 const D_EQUIPAS = ['Alqueidão Serra','Beneditense','Boavista','Bombarralense','Caldas B','GC Alcobaça','GD Ilha','GD Peniche','Guiense','Marinhense','Portomosense','SC Pombal','SCL Marrazes','SL Marinha','U. Pombal','Vieirense'];
 const D_EXTRA_CATS = [
   { id:'campea',   label:'Equipa Campeã',          fields:['campea']                          },
@@ -2397,16 +2409,20 @@ let dPagamentos  = new Set();
 let dExtrasPicks = { nuno: {}, patricinha: {} };
 let dExtrasRes   = {};
 let dExtrasPago  = false;
+let dExatoPicks  = { nuno: {}, patricinha: {} }; // { ji: "2-1" }
+let dExatoRes    = {}; // { ji: "2-1" }
 let dLoaded      = false;
 
 async function dLoadData() {
-  const [{ data: pd }, { data: rd }, { data: pg }, { data: ep }, { data: er }, { data: epg }] = await Promise.all([
+  const [{ data: pd }, { data: rd }, { data: pg }, { data: ep }, { data: er }, { data: epg }, { data: xp }, { data: xr }] = await Promise.all([
     sb.from('dist_palpites').select('*'),
     sb.from('dist_resultados').select('*'),
     sb.from('dist_pagamentos').select('jornada'),
     sb.from('dist_extras_palpites').select('*'),
     sb.from('dist_extras_resultados').select('*').eq('id', 1),
     sb.from('dist_extras_pagamento').select('id').eq('id', 1),
+    sb.from('dist_exato_palpites').select('*'),
+    sb.from('dist_exato_resultados').select('*'),
   ]);
   dPicks = { nuno: {}, patricinha: {} };
   (pd || []).forEach(p => {
@@ -2420,6 +2436,10 @@ async function dLoadData() {
   (ep || []).forEach(p => { dExtrasPicks[p.player] = p; });
   dExtrasRes = (er && er[0]) ? er[0] : {};
   dExtrasPago = !!(epg && epg.length > 0);
+  dExatoPicks = { nuno: {}, patricinha: {} };
+  (xp || []).forEach(p => { if (!dExatoPicks[p.player]) dExatoPicks[p.player] = {}; dExatoPicks[p.player][p.jornada] = p.score; });
+  dExatoRes = {};
+  (xr || []).forEach(r => { dExatoRes[r.jornada] = r.score; });
   dRender();
 }
 
@@ -2451,6 +2471,25 @@ async function dSaveResult(j, g, opt) {
   dRenderGames(); dUpdateStats(); dRenderTabs();
   await sb.from('dist_resultados').upsert({ jornada:j, game_idx:g, resultado:opt },
     { onConflict:'jornada,game_idx' });
+}
+
+// ── RESULTADO EXATO ──
+async function dSaveExato(ji, hEl, aEl) {
+  const h = parseInt(hEl.value), a = parseInt(aEl.value);
+  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
+  const score = `${h}-${a}`;
+  if (!dExatoPicks[dPlayer]) dExatoPicks[dPlayer] = {};
+  dExatoPicks[dPlayer][ji] = score;
+  await sb.from('dist_exato_palpites').upsert({ player: dPlayer, jornada: ji, score }, { onConflict: 'player,jornada' });
+}
+
+async function dSaveExatoResult(ji, hEl, aEl) {
+  const h = parseInt(hEl.value), a = parseInt(aEl.value);
+  if (isNaN(h) || isNaN(a) || h < 0 || a < 0) return;
+  const score = `${h}-${a}`;
+  dExatoRes[ji] = score;
+  dRenderGames(); dUpdateStats(); dRenderTabs();
+  await sb.from('dist_exato_resultados').upsert({ jornada: ji, score }, { onConflict: 'jornada' });
 }
 
 // ── EXTRAS LOGIC ──
@@ -2605,9 +2644,15 @@ function dJornadaStats(ji) {
   const pPerfeita = allDone && pA === total; // Patri acertou tudo → Nuno paga €20
   // Taxa fixa €2 por jornada finalizada + €0.50 por acerto (ou €20 flat se perfeita)
   const taxa = nR > 0 ? D_TAXA : 0;
-  const patriDeve = taxa + (nPerfeita ? D_PERFEITA : nA * D_PEN);
-  const nunoDeve  = taxa + (pPerfeita ? D_PERFEITA : pA * D_PEN);
-  return { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve };
+  let patriDeve = taxa + (nPerfeita ? D_PERFEITA : nA * D_PEN);
+  let nunoDeve  = taxa + (pPerfeita ? D_PERFEITA : pA * D_PEN);
+  // Bónus resultado exato: €2 se acertou
+  const exatoRes = dExatoRes[ji];
+  const nExato = exatoRes && dExatoPicks.nuno?.[ji] === exatoRes;
+  const pExato = exatoRes && dExatoPicks.patricinha?.[ji] === exatoRes;
+  if (nExato) patriDeve += D_EXATO_BONUS;
+  if (pExato) nunoDeve  += D_EXATO_BONUS;
+  return { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve, nExato, pExato };
 }
 
 function dCalcStats() {
@@ -2751,6 +2796,39 @@ function dRenderGames() {
       </div>`;
     }).join('');
 
+    // Secção resultado exato (apenas no jogo selecionado)
+    let exatoHTML = '';
+    if (gi === D_EXATO_JOGOS[ji]) {
+      const xRes = dExatoRes[ji] || '';
+      const [xRH, xRA] = xRes ? xRes.split('-') : ['', ''];
+      if (dAdmin) {
+        exatoHTML = `<div class="dist-exato">
+          <div class="dist-exato-lbl">⚽ Resultado exato (admin)</div>
+          <div class="dist-exato-row">
+            <input type="number" min="0" max="20" class="dist-exato-inp adm" id="xah-${ji}" value="${xRH}" onchange="dSaveExatoResult(${ji},document.getElementById('xah-${ji}'),document.getElementById('xaa-${ji}'))">
+            <span class="dist-exato-sep">–</span>
+            <input type="number" min="0" max="20" class="dist-exato-inp adm" id="xaa-${ji}" value="${xRA}" onchange="dSaveExatoResult(${ji},document.getElementById('xah-${ji}'),document.getElementById('xaa-${ji}'))">
+          </div>
+        </div>`;
+      } else {
+        const myScore = dExatoPicks[dPlayer]?.[ji] || '';
+        const [myH, myA] = myScore ? myScore.split('-') : ['', ''];
+        const locked = !!xRes;
+        const correct = xRes && myScore === xRes;
+        const wrong   = xRes && myScore && myScore !== xRes;
+        const statusIcon = xRes ? (correct ? `✅ Acertaste! (+€${D_EXATO_BONUS})` : myScore ? `❌ Era: ${xRes}` : `⏳ ${xRes}`) : '';
+        exatoHTML = `<div class="dist-exato">
+          <div class="dist-exato-lbl">⚽ Resultado exato</div>
+          <div class="dist-exato-row">
+            <input type="number" min="0" max="20" class="dist-exato-inp" id="xph-${ji}" value="${myH}" ${locked?'disabled':''} onchange="dSaveExato(${ji},document.getElementById('xph-${ji}'),document.getElementById('xpa-${ji}'))">
+            <span class="dist-exato-sep">–</span>
+            <input type="number" min="0" max="20" class="dist-exato-inp" id="xpa-${ji}" value="${myA}" ${locked?'disabled':''} onchange="dSaveExato(${ji},document.getElementById('xph-${ji}'),document.getElementById('xpa-${ji}'))">
+          </div>
+          ${statusIcon ? `<div class="dist-exato-status">${statusIcon}</div>` : ''}
+        </div>`;
+      }
+    }
+
     return `<div class="dist-card${dAdmin?' adm':''}">
       <div class="dist-teams">
         <div class="dist-th">${home}</div>
@@ -2758,6 +2836,7 @@ function dRenderGames() {
         <div class="dist-ta">${away}</div>
       </div>
       <div class="dist-btns">${btns}</div>
+      ${exatoHTML}
     </div>`;
   }).join('');
 }
