@@ -2413,33 +2413,37 @@ let dExatoPicks  = { nuno: {}, patricinha: {} }; // { ji: "2-1" }
 let dExatoRes    = {}; // { ji: "2-1" }
 let dLoaded      = false;
 
+async function dQ(q)  { try { const {data} = await q; return data || []; } catch { return []; } }
+async function dQ1(q) { try { const {data} = await q; return (data && data[0]) || null; } catch { return null; } }
+async function dQb(q) { try { const {data} = await q; return !!(data && data.length > 0); } catch { return false; } }
+
 async function dLoadData() {
-  const [{ data: pd }, { data: rd }, { data: pg }, { data: ep }, { data: er }, { data: epg }, { data: xp }, { data: xr }] = await Promise.all([
-    sb.from('dist_palpites').select('*'),
-    sb.from('dist_resultados').select('*'),
-    sb.from('dist_pagamentos').select('jornada'),
-    sb.from('dist_extras_palpites').select('*'),
-    sb.from('dist_extras_resultados').select('*').eq('id', 1),
-    sb.from('dist_extras_pagamento').select('id').eq('id', 1),
-    sb.from('dist_exato_palpites').select('*'),
-    sb.from('dist_exato_resultados').select('*'),
+  const [pd, rd, pg, ep, er, epg, xp, xr] = await Promise.all([
+    dQ(sb.from('dist_palpites').select('*')),
+    dQ(sb.from('dist_resultados').select('*')),
+    dQ(sb.from('dist_pagamentos').select('jornada')),
+    dQ(sb.from('dist_extras_palpites').select('*')),
+    dQ1(sb.from('dist_extras_resultados').select('*').eq('id', 1)),
+    dQb(sb.from('dist_extras_pagamento').select('id').eq('id', 1)),
+    dQ(sb.from('dist_exato_palpites').select('*')),
+    dQ(sb.from('dist_exato_resultados').select('*')),
   ]);
   dPicks = { nuno: {}, patricinha: {} };
-  (pd || []).forEach(p => {
+  pd.forEach(p => {
     if (!dPicks[p.player]) dPicks[p.player] = {};
     dPicks[p.player][`${p.jornada}_${p.game_idx}`] = p.palpite;
   });
   dResults = {};
-  (rd || []).forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
-  dPagamentos = new Set((pg || []).map(p => p.jornada));
+  rd.forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
+  dPagamentos = new Set(pg.map(p => p.jornada));
   dExtrasPicks = { nuno: {}, patricinha: {} };
-  (ep || []).forEach(p => { dExtrasPicks[p.player] = p; });
-  dExtrasRes = (er && er[0]) ? er[0] : {};
-  dExtrasPago = !!(epg && epg.length > 0);
+  ep.forEach(p => { dExtrasPicks[p.player] = p; });
+  dExtrasRes = er || {};
+  dExtrasPago = epg;
   dExatoPicks = { nuno: {}, patricinha: {} };
-  (xp || []).forEach(p => { if (!dExatoPicks[p.player]) dExatoPicks[p.player] = {}; dExatoPicks[p.player][p.jornada] = p.score; });
+  xp.forEach(p => { if (!dExatoPicks[p.player]) dExatoPicks[p.player] = {}; dExatoPicks[p.player][p.jornada] = p.score; });
   dExatoRes = {};
-  (xr || []).forEach(r => { dExatoRes[r.jornada] = r.score; });
+  xr.forEach(r => { dExatoRes[r.jornada] = r.score; });
   dRender();
 }
 
