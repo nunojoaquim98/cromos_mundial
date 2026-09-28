@@ -2849,13 +2849,11 @@ async function dTogglePago(ji) {
   if (dPagamentos.has(ji)) {
     dPagamentos.delete(ji);
     dRenderTabs(); dRenderGames(); dUpdateStats();
-    const { error } = await sb.from('dist_pagamentos').delete().eq('jornada', ji);
-    if (error) { console.error('dTogglePago delete:', error); alert('Erro ao desmarcar: ' + error.message); }
+    await sb.from('dist_pagamentos').delete().eq('jornada', ji);
   } else {
     dPagamentos.add(ji);
     dRenderTabs(); dRenderGames(); dUpdateStats();
-    const { error } = await sb.from('dist_pagamentos').upsert({ jornada: ji }, { onConflict: 'jornada' });
-    if (error) { console.error('dTogglePago upsert:', error); alert('Erro ao marcar como pago: ' + error.message); }
+    await sb.from('dist_pagamentos').upsert({ jornada: ji }, { onConflict: 'jornada' });
   }
 }
 
