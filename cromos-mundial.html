@@ -635,11 +635,16 @@ body.light .jpts.p0 { background: #f1f5f9; }
 .dist-pago-val.pp{color:var(--purple)}
 .dist-pago-val.total{color:var(--gold)}
 .dist-perfeita{background:rgba(245,197,24,.1);border:1px solid rgba(245,197,24,.35);border-radius:6px;padding:5px 10px;font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:var(--gold);text-align:center;margin:6px 0 4px;letter-spacing:.5px}
-.dist-pago-btn{width:100%;margin-top:8px;padding:8px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:all .15s}
-.dist-pago-btn:hover{border-color:var(--green);color:var(--green)}
-.dist-pago-btn.pago{border-color:var(--green);background:var(--green-dim);color:var(--green)}
+.dist-pago-btns{display:flex;gap:6px;margin-top:8px}
+.dist-pago-btn{flex:1;padding:8px 4px;border-radius:8px;border:1px solid var(--border2);background:transparent;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:.78rem;letter-spacing:.5px;cursor:pointer;transition:all .15s;text-align:center}
+.dist-pago-btn.nn:hover{border-color:var(--blue);color:var(--blue)}
+.dist-pago-btn.pp:hover{border-color:var(--purple);color:var(--purple)}
+.dist-pago-btn.nn.pago{border-color:var(--blue);background:rgba(59,130,246,.12);color:var(--blue)}
+.dist-pago-btn.pp.pago{border-color:var(--purple);background:rgba(168,85,247,.12);color:var(--purple)}
 .dist-jtab.pago-done{color:var(--green)}
 .dist-jtab.pago-done.active{border-bottom-color:var(--green)}
+.dist-jtab.pago-partial{color:var(--gold)}
+.dist-jtab.pago-partial.active{border-bottom-color:var(--gold)}
 .dist-jtab.extras-tab{color:var(--gold)}
 .dist-jtab.extras-tab.active{border-bottom-color:var(--gold);color:var(--gold)}
 .dist-ext-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px}
@@ -2405,10 +2410,10 @@ let dJornada     = 0;
 let dAdmin       = false;
 let dPicks       = { nuno: {}, patricinha: {} };
 let dResults     = {};
-let dPagamentos  = new Set();
+let dPagamentos  = { nuno: new Set(), patricinha: new Set() };
 let dExtrasPicks = { nuno: {}, patricinha: {} };
 let dExtrasRes   = {};
-let dExtrasPago  = false;
+let dExtrasPago  = { nuno: false, patricinha: false };
 let dExatoPicks  = { nuno: {}, patricinha: {} }; // { ji: "2-1" }
 let dExatoRes    = {}; // { ji: "2-1" }
 let dLoaded      = false;
@@ -2421,10 +2426,10 @@ async function dLoadData() {
   const [pd, rd, pg, ep, er, epg, xp, xr] = await Promise.all([
     dQ(sb.from('dist_palpites').select('*')),
     dQ(sb.from('dist_resultados').select('*')),
-    dQ(sb.from('dist_pagamentos').select('jornada')),
+    dQ(sb.from('dist_pagamentos').select('jornada,player')),
     dQ(sb.from('dist_extras_palpites').select('*')),
     dQ1(sb.from('dist_extras_resultados').select('*').eq('id', 1)),
-    dQb(sb.from('dist_extras_pagamento').select('id').eq('id', 1)),
+    dQ(sb.from('dist_extras_pagamento').select('player')),
     dQ(sb.from('dist_exato_palpites').select('*')),
     dQ(sb.from('dist_exato_resultados').select('*')),
   ]);
@@ -2435,11 +2440,13 @@ async function dLoadData() {
   });
   dResults = {};
   rd.forEach(r => { dResults[`${r.jornada}_${r.game_idx}`] = r.resultado; });
-  dPagamentos = new Set(pg.map(p => p.jornada));
+  dPagamentos = { nuno: new Set(), patricinha: new Set() };
+  pg.forEach(p => { if (dPagamentos[p.player]) dPagamentos[p.player].add(p.jornada); });
   dExtrasPicks = { nuno: {}, patricinha: {} };
   ep.forEach(p => { dExtrasPicks[p.player] = p; });
   dExtrasRes = er || {};
-  dExtrasPago = epg;
+  dExtrasPago = { nuno: false, patricinha: false };
+  epg.forEach(p => { if (p.player === 'nuno' || p.player === 'patricinha') dExtrasPago[p.player] = true; });
   dExatoPicks = { nuno: {}, patricinha: {} };
   xp.forEach(p => { if (!dExatoPicks[p.player]) dExatoPicks[p.player] = {}; dExatoPicks[p.player][p.jornada] = p.score; });
   dExatoRes = {};
@@ -2530,18 +2537,20 @@ async function dSaveExtrasResult(field, value) {
   await sb.from('dist_extras_resultados').upsert(row, { onConflict: 'id' });
 }
 
-async function dToggleExtrasPago() {
-  dExtrasPago = !dExtrasPago;
+async function dToggleExtrasPago(player) {
+  dExtrasPago[player] = !dExtrasPago[player];
   dRenderExtras(); dUpdateStats();
-  if (dExtrasPago) await sb.from('dist_extras_pagamento').upsert({ id: 1 }, { onConflict: 'id' });
-  else await sb.from('dist_extras_pagamento').delete().eq('id', 1);
+  if (dExtrasPago[player]) await sb.from('dist_extras_pagamento').upsert({ player }, { onConflict: 'player' });
+  else await sb.from('dist_extras_pagamento').delete().eq('player', player);
 }
 
 function dRenderExtras() {
   const stats = dExtrasStats();
   const myP = dExtrasPicks[dPlayer] || {};
   const r = dExtrasRes;
-  const pago = dExtrasPago;
+  const nunoP  = dExtrasPago.nuno;
+  const patriP = dExtrasPago.patricinha;
+  const pago   = nunoP && patriP;
   const pagoMark = pago ? ' <span style="color:var(--green);font-size:.75rem">✓ PAGO</span>' : '';
   const scoreHTML = stats.allSet
     ? `<div class="dist-jh-score"><span class="nn">${stats.nAcertos}</span>–<span class="pp">${stats.pAcertos}</span><span style="color:var(--muted);font-size:.72rem">(acertos/5)</span></div>`
@@ -2556,9 +2565,14 @@ function dRenderExtras() {
       <div class="dist-pago-row"><span class="dist-pago-lbl">Patri acertou</span><span class="dist-pago-val pp">${stats.pAcertos}/5</span></div>
       <div class="dist-pago-row"><span class="dist-pago-lbl">Patri deve</span><span class="dist-pago-val" style="color:var(--text2)">€${stats.patriDeve.toFixed(2)}</span></div>
       <div class="dist-pago-row"><span class="dist-pago-lbl">Nuno deve</span><span class="dist-pago-val" style="color:var(--text2)">€${stats.nunoDeve.toFixed(2)}</span></div>
-      <button class="dist-pago-btn${pago ? ' pago' : ''}" onclick="dToggleExtrasPago()">
-        ${pago ? '✓ EXTRAS PAGOS — clica para desmarcar' : '○ Marcar como Pago'}
-      </button>
+      <div class="dist-pago-btns">
+        <button class="dist-pago-btn nn${nunoP ? ' pago' : ''}" onclick="dToggleExtrasPago('nuno')">
+          ${nunoP ? '✓ Nuno Pago' : '○ Nuno Pago'}
+        </button>
+        <button class="dist-pago-btn pp${patriP ? ' pago' : ''}" onclick="dToggleExtrasPago('patricinha')">
+          ${patriP ? '✓ Patri Pago' : '○ Patri Pago'}
+        </button>
+      </div>
     </div>`;
   }
   document.getElementById('dist-pago-panel').innerHTML = pagoPanel;
@@ -2668,17 +2682,13 @@ function dCalcStats() {
     jorns.add(ji);
     nA += s.nA;
     pA += s.pA;
-    if (dPagamentos.has(ji)) {
-      pote += s.nunoDeve + s.patriDeve;
-    } else {
-      nunoDeve  += s.nunoDeve;
-      patriDeve += s.patriDeve;
-    }
+    if (dPagamentos.nuno.has(ji)) pote += s.nunoDeve; else nunoDeve += s.nunoDeve;
+    if (dPagamentos.patricinha.has(ji)) pote += s.patriDeve; else patriDeve += s.patriDeve;
   });
   const es = dExtrasStats();
   if (es.allSet) {
-    if (dExtrasPago) pote += es.patriDeve + es.nunoDeve;
-    else { nunoDeve += es.nunoDeve; patriDeve += es.patriDeve; }
+    if (dExtrasPago.nuno) pote += es.nunoDeve; else nunoDeve += es.nunoDeve;
+    if (dExtrasPago.patricinha) pote += es.patriDeve; else patriDeve += es.patriDeve;
   }
   return { nA, pA, nunoDeve, patriDeve, caixa: nunoDeve + patriDeve, pote, nJ: jorns.size };
 }
@@ -2697,23 +2707,29 @@ function dRenderTabs() {
   const tabs = D_JORNADAS.map((games, ji) => {
     const hasPick = games.some((_, gi) => dPicks[dPlayer]?.[`${ji}_${gi}`]);
     const hasRes  = games.some((_, gi) => dResults[`${ji}_${gi}`]);
-    const pago    = dPagamentos.has(ji);
+    const nunoP   = dPagamentos.nuno.has(ji);
+    const patriP  = dPagamentos.patricinha.has(ji);
+    const pago    = nunoP && patriP;
     let cls = 'dist-jtab';
     if (ji === dJornada) cls += ' active';
     if (pago) cls += ' pago-done';
+    else if (nunoP || patriP) cls += ' pago-partial';
     else if (hasRes) cls += ' done';
     const pip = (!dAdmin && hasPick)
       ? `<span class="dist-jtab-pip" style="background:${dPlayer==='nuno'?'var(--blue)':'var(--purple)'}"></span>`
       : '';
-    const pagoMark = pago ? ' ✓' : '';
+    const pagoMark = pago ? ' ✓' : (nunoP || patriP) ? ' ½' : '';
     return `<div class="${cls}" onclick="dSetJornada(${ji})">${D_ORD[ji]}${pagoMark}${pip}</div>`;
   }).join('');
   let extCls = 'dist-jtab extras-tab';
   if (dJornada === 30) extCls += ' active';
-  if (dExtrasPago) extCls += ' pago-done';
+  const extPago    = dExtrasPago.nuno && dExtrasPago.patricinha;
+  const extPartial = dExtrasPago.nuno || dExtrasPago.patricinha;
+  if (extPago) extCls += ' pago-done';
+  else if (extPartial) extCls += ' pago-partial';
   else if (extStats.allSet) extCls += ' done';
   document.getElementById('dist-jtabs').innerHTML = tabs +
-    `<div class="${extCls}" onclick="dSetJornada(30)">⭐ Extras${dExtrasPago ? ' ✓' : ''}</div>`;
+    `<div class="${extCls}" onclick="dSetJornada(30)">⭐ Extras${extPago ? ' ✓' : extPartial ? ' ½' : ''}</div>`;
   const el = document.getElementById('dist-jtabs').children[dJornada === 30 ? 30 : dJornada];
   if (el) el.scrollIntoView({ block:'nearest', inline:'center', behavior:'smooth' });
 }
@@ -2726,7 +2742,9 @@ function dRenderGames() {
   const myC   = dPlayer === 'nuno' ? 'nn' : 'pp';
   const othC  = dPlayer === 'nuno' ? 'pp' : 'nn';
   const { nA, pA, nR, allDone, nPerfeita, pPerfeita, patriDeve, nunoDeve } = dJornadaStats(ji);
-  const pago = dPagamentos.has(ji);
+  const nunoP = dPagamentos.nuno.has(ji);
+  const patriP = dPagamentos.patricinha.has(ji);
+  const pago = nunoP && patriP;
 
   let scoreHTML = nR > 0
     ? `<div class="dist-jh-score"><span class="nn">${nA}</span>–<span class="pp">${pA}</span><span style="color:var(--muted);font-size:.72rem">(${nR}/8)</span></div>`
@@ -2760,9 +2778,14 @@ function dRenderGames() {
         <span class="dist-pago-val total">€${(patriDeve + nunoDeve).toFixed(2)}</span>
       </div>
       ${perfHTML}
-      <button class="dist-pago-btn${pago ? ' pago' : ''}" onclick="dTogglePago(${ji})">
-        ${pago ? '✓ JORNADA PAGA — clica para desmarcar' : '○ Marcar como Paga'}
-      </button>
+      <div class="dist-pago-btns">
+        <button class="dist-pago-btn nn${nunoP ? ' pago' : ''}" onclick="dTogglePago(${ji},'nuno')">
+          ${nunoP ? '✓ Nuno Pago' : '○ Nuno Pago'}
+        </button>
+        <button class="dist-pago-btn pp${patriP ? ' pago' : ''}" onclick="dTogglePago(${ji},'patricinha')">
+          ${patriP ? '✓ Patri Pago' : '○ Patri Pago'}
+        </button>
+      </div>
     </div>`;
   }
   document.getElementById('dist-pago-panel').innerHTML = pagoPanel;
@@ -2845,15 +2868,15 @@ function dRenderGames() {
   }).join('');
 }
 
-async function dTogglePago(ji) {
-  if (dPagamentos.has(ji)) {
-    dPagamentos.delete(ji);
+async function dTogglePago(ji, player) {
+  if (dPagamentos[player].has(ji)) {
+    dPagamentos[player].delete(ji);
     dRenderTabs(); dRenderGames(); dUpdateStats();
-    await sb.from('dist_pagamentos').delete().eq('jornada', ji);
+    await sb.from('dist_pagamentos').delete().eq('jornada', ji).eq('player', player);
   } else {
-    dPagamentos.add(ji);
+    dPagamentos[player].add(ji);
     dRenderTabs(); dRenderGames(); dUpdateStats();
-    await sb.from('dist_pagamentos').upsert({ jornada: ji }, { onConflict: 'jornada' });
+    await sb.from('dist_pagamentos').upsert({ jornada: ji, player }, { onConflict: 'jornada,player' });
   }
 }
 
